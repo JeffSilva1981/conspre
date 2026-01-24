@@ -2,7 +2,9 @@ package com.jeferson.conspre.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,6 +27,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<StockMovement> stockMovements = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<MaterialRequest> materialRequests = new ArrayList<>();
 
     public User(){
 
@@ -84,6 +89,10 @@ public class User {
 
     public Set<StockMovement> getStockMovements() {
         return stockMovements;
+    }
+
+    public List<MaterialRequest> getMaterialRequests() {
+        return materialRequests;
     }
 
     @Override

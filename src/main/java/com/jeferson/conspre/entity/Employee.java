@@ -19,6 +19,9 @@ public class Employee {
     @OneToMany(mappedBy = "employee")
     private List<StockMovement> stockMovements = new ArrayList<>();
 
+    @OneToMany(mappedBy = "employee")
+    private List<MaterialRequest> materialRequests = new ArrayList<>();
+
     public Employee(){
 
     }
@@ -60,6 +63,14 @@ public class Employee {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public List<StockMovement> getStockMovements() {
+        return stockMovements;
+    }
+
+    public List<MaterialRequest> getMaterialRequests() {
+        return materialRequests;
     }
 
     @Override
