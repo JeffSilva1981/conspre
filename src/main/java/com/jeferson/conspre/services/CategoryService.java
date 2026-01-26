@@ -28,7 +28,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
-        Category entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Categoria não encontrada " + id));
+        Category entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Categoria "+ id +" não encontrada."));
         return new CategoryDTO(entity);
     }
 
@@ -41,6 +41,7 @@ public class CategoryService {
 
         Category entity = new Category();
         copyDtoToEntity(entity, dto);
+        entity.setAtivo(true);
         entity = repository.save(entity);
         return new CategoryDTO(entity);
     }
@@ -48,17 +49,22 @@ public class CategoryService {
     @Transactional
     public CategoryDTO update(Long id, CategoryDTO dto) {
 
-        if (repository.existsByNameIgnoreCaseAndAtivoTrue(dto.getName())) {
-            throw new DatabaseException("Já existe uma categoria ativa com esse nome");
+
+        if (repository.existsById(id)){
+            if (repository.existsByNameIgnoreCaseAndAtivoTrue(dto.getName())) {
+                throw new DatabaseException("Já existe uma categoria ativa com esse nome");
+            }
         }
 
         try {
             Category entity = repository.getReferenceById(id);
             copyDtoToEntity(entity, dto);
             entity = repository.save(entity);
+            entity.setAtivo(true);
             return new CategoryDTO(entity);
+
         }catch (EntityNotFoundException e){
-            throw new ResourceNotFoundException("Categoria não encontrada " + id);
+            throw new ResourceNotFoundException("Categoria "+ id +" não encontrada.");
         }
     }
 
@@ -66,16 +72,13 @@ public class CategoryService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
 
-        if (!repository.existsById(id)){
-            throw new ResourceNotFoundException("Categoria não encontrada " + id);
-        }
+        Category entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Categoria "+ id +" não encontrada." )
+                );
 
-        try {
-            repository.deleteById(id);
-        }
-        catch (DataIntegrityViolationException e){
-            throw new DatabaseException("Categoria não pode ser excluída pois está associada a materiais");
-        }
+        entity.setAtivo(false);
+        repository.save(entity);
     }
 
     private void copyDtoToEntity(Category entity, CategoryDTO dto) {

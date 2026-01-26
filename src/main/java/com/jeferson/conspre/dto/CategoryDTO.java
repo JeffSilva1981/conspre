@@ -14,7 +14,7 @@ public class CategoryDTO {
 
     @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres")
     private String description;
-    private boolean ativo;
+    private Boolean ativo;
 
     public CategoryDTO(){
 
