@@ -50,11 +50,10 @@ public class CategoryService {
     public CategoryDTO update(Long id, CategoryDTO dto) {
 
 
-        if (repository.existsById(id)){
-            if (repository.existsByNameIgnoreCaseAndAtivoTrue(dto.getName())) {
-                throw new DatabaseException("Já existe uma categoria ativa com esse nome");
-            }
+        if (repository.existsByNameIgnoreCaseAndAtivoTrueAndIdNot(dto.getName(), id)) {
+            throw new DatabaseException("Já existe um material ativo com esse nome");
         }
+
 
         try {
             Category entity = repository.getReferenceById(id);

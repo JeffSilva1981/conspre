@@ -2,7 +2,12 @@ package com.jeferson.conspre.entity;
 
 import com.jeferson.conspre.enums.TypeUnit;
 import jakarta.persistence.*;
-import java.text.DecimalFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,15 +18,29 @@ public class Material {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     private String name;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
     private TypeUnit unitOfMeasure;
-    private DecimalFormat currentStock;
-    private DecimalFormat minimumStock;
-    private boolean ativo;
+
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal currentStock;
+
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal minimumStock;
+
+
+    private Boolean ativo;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private Category categories;
+    private Category category;
 
     @OneToMany(mappedBy = "material")
     private Set<StockMovement> stockMovements = new HashSet<>();
@@ -30,15 +49,15 @@ public class Material {
 
     }
 
-    public Material(Long id, String name, TypeUnit unitOfMeasure, DecimalFormat currentStock, DecimalFormat minimumStock,
-                    boolean ativo, Category categories) {
+    public Material(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock, BigDecimal minimumStock,
+                    boolean ativo, Category category) {
         this.id = id;
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
         this.currentStock = currentStock;
         this.minimumStock = minimumStock;
         this.ativo = ativo;
-        this.categories = categories;
+        this.category = category;
     }
 
     public Long getId() {
@@ -65,19 +84,19 @@ public class Material {
         this.unitOfMeasure = unitOfMeasure;
     }
 
-    public DecimalFormat getCurrentStock() {
+    public BigDecimal getCurrentStock() {
         return currentStock;
     }
 
-    public void setCurrentStock(DecimalFormat currentStock) {
+    public void setCurrentStock(BigDecimal currentStock) {
         this.currentStock = currentStock;
     }
 
-    public DecimalFormat getMinimumStock() {
+    public BigDecimal getMinimumStock() {
         return minimumStock;
     }
 
-    public void setMinimumStock(DecimalFormat minimumStock) {
+    public void setMinimumStock(BigDecimal minimumStock) {
         this.minimumStock = minimumStock;
     }
 
@@ -89,12 +108,12 @@ public class Material {
         this.ativo = ativo;
     }
 
-    public Category getCategories() {
-        return categories;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategories(Category categories) {
-        this.categories = categories;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public Set<StockMovement> getStockMovements() {

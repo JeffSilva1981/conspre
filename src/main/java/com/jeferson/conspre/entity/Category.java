@@ -23,7 +23,7 @@ public class Category {
     private String description;
     private boolean ativo;
 
-    @OneToMany(mappedBy = "categories")
+    @OneToMany(mappedBy = "category")
     private Set<Material> materials = new HashSet<>();
 
     public Category(){
