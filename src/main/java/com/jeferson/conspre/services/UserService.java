@@ -11,6 +11,7 @@ import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,9 @@ public class UserService {
 
     @Autowired
     private UserRepository repository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public Page<UserResponseDTO> findAll(String name, Pageable pageable) {
@@ -79,7 +83,7 @@ public class UserService {
                 (()-> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
 
         // Verifica senha atual
-        if (!entity.getPassword().equals(dto.getCurrentPassword())) {
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), entity.getPassword())) {
             throw new DatabaseException("Senha atual incorreta");
         }
 
@@ -88,7 +92,7 @@ public class UserService {
             throw new DatabaseException("Nova senha e confirmação não coincidem");
         }
 
-        entity.setPassword(dto.getNewPassword());
+        entity.setPassword(passwordEncoder.encode(dto.getNewPassword()));
 
         repository.save(entity);
     }
@@ -113,6 +117,6 @@ public class UserService {
     private void copyDtoToEntity(User entity, CreateUserDTO dto) {
         entity.setName(dto.getName());
         entity.setLogin(dto.getLogin());
-        entity.setPassword(dto.getPassword());
+        entity.setPassword(passwordEncoder.encode(dto.getPassword()));
     }
 }
