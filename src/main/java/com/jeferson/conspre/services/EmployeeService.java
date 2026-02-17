@@ -55,7 +55,7 @@ public class EmployeeService {
         }
 
         try {
-            Employee entity = repository.getReferenceById(id);
+            Employee entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Employee " + id + " não encontrado"));
             copyDtoToEntity(entity, dto);
             entity.setAtivo(true);
             entity = repository.save(entity);

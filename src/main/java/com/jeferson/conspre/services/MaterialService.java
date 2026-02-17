@@ -60,16 +60,11 @@ public class MaterialService {
             throw new DatabaseException("Já existe um material ativo com esse nome");
         }
 
-        try {
             Material entity = repository.getReferenceById(id);
             copyDtoToEntity(entity, dto);
             entity.setAtivo(true);
             entity = repository.save(entity);
             return new MaterialDTO(entity);
-
-        }catch (EntityNotFoundException e){
-            throw new ResourceNotFoundException("Material "+ id +" não encontrado.");
-        }
     }
 
 

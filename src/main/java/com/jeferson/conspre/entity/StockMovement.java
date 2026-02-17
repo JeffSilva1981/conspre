@@ -13,13 +13,23 @@ public class StockMovement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TypeMovement type;
+
+    @Column(nullable = false)
     private Instant date;
+
+
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal quantity;
+
+    @Column(length = 500)
     private String observation;
 
     @ManyToOne
-    @JoinColumn(name = "material_id")
+    @JoinColumn(name = "material_id", nullable = false)
     private Material material;
 
     @ManyToOne
@@ -30,12 +40,21 @@ public class StockMovement {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private MaterialRequest materialRequest;
+
+    @PrePersist
+    public void prePersist() {
+        this.date = Instant.now();
+    }
+
     public StockMovement(){
 
     }
 
-    public StockMovement(Long id, TypeMovement type, Instant date, BigDecimal quantity, String observation,
-                         Material material, User user, Employee employee) {
+    public StockMovement(Long id, TypeMovement type, Instant date, BigDecimal quantity, String observation, Material material,
+                         User user, Employee employee, MaterialRequest materialRequest) {
         this.id = id;
         this.type = type;
         this.date = date;
@@ -44,6 +63,7 @@ public class StockMovement {
         this.material = material;
         this.user = user;
         this.employee = employee;
+        this.materialRequest = materialRequest;
     }
 
     public Long getId() {
@@ -108,6 +128,14 @@ public class StockMovement {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    public MaterialRequest getMaterialRequest() {
+        return materialRequest;
+    }
+
+    public void setMaterialRequest(MaterialRequest materialRequest) {
+        this.materialRequest = materialRequest;
     }
 
     @Override

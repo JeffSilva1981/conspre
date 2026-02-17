@@ -2,7 +2,6 @@ package com.jeferson.conspre.controllers;
 
 import com.jeferson.conspre.dto.EmployeeDTO;
 import com.jeferson.conspre.dto.EmployeeMinDTO;
-import com.jeferson.conspre.dto.MaterialMinDTO;
 import com.jeferson.conspre.services.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +26,20 @@ public class EmployeeResource {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping
+    @GetMapping("/{id}")
     public ResponseEntity<EmployeeDTO> findById(@PathVariable Long id){
         EmployeeDTO dto = service.findById(id);
         return ResponseEntity.ok(dto);
     }
 
-    @PutMapping
+    @PostMapping
     public ResponseEntity<EmployeeDTO> insert(@Valid @RequestBody EmployeeDTO dto){
         EmployeeDTO newDto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.ok(newDto);
     }
 
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @Valid @RequestBody EmployeeDTO dto){
         EmployeeDTO newDto = service.update(id, dto);
         return ResponseEntity.ok(newDto);
