@@ -15,3 +15,12 @@ INSERT INTO tb_employee(name, registration, ativo) VALUES ('Paulo Roberto', 'Sol
 
 INSERT INTO tb_stock_movement(type, date, quantity, observation, material_id, employee_id) VALUES ('INPUT', '2026-02-15', 10, 'Entrada de material', 1, 1);
 
+INSERT INTO tb_user (name, login, password, ativo) VALUES ('jeferson ferreira da silva', 'Jeferson','$2a$10$OUnXv2ChCAYkMw/eK3YlPeLU6WbM95y6BpGBB0Prm1tWP5gIqt.hC', true);
+INSERT INTO tb_user (name, login, password, ativo) VALUES ('kauan henrique', 'kauan henrique','$2a$10$OUnXv2ChCAYkMw/eK3YlPeLU6WbM95y6BpGBB0Prm1tWP5gIqt.hC', true);
+
+INSERT INTO tb_role (authority) VALUES ('ROLE_USER');
+INSERT INTO tb_role (authority) VALUES ('ROLE_ADMIN');
+
+INSERT INTO tb_user_role (user_id, role_id) VALUES (1, 2);
+INSERT INTO tb_user_role (user_id, role_id) VALUES (1, 1);
+INSERT INTO tb_user_role (user_id, role_id) VALUES (2, 1);
