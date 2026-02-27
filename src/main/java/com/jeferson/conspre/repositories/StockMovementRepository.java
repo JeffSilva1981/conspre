@@ -12,7 +12,7 @@ import java.util.List;
 public interface StockMovementRepository extends JpaRepository<StockMovement, Long> {
 
 
-    List<StockMovement> findByMaterial(Long materialId);
+    List<StockMovement> findByMaterialId(Long materialId);
 
     List<StockMovement> findByMaterialRequestId(Long requestId);
 
