@@ -1,13 +1,10 @@
 package com.jeferson.conspre.entity;
 
-
-import com.jeferson.conspre.enums.Status;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_material_request")
@@ -33,7 +30,7 @@ public class MaterialRequest {
     @OneToMany(mappedBy = "materialRequest",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private Set<RequestMaterialItem> requestMaterialItems = new HashSet<>();
+    private List<RequestMaterialItem> requestMaterialItems = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
@@ -93,7 +90,7 @@ public class MaterialRequest {
         this.employee = employee;
     }
 
-    public Set<RequestMaterialItem> getRequestMaterialItems() {
+    public List<RequestMaterialItem> getRequestMaterialItems() {
         return requestMaterialItems;
     }
 

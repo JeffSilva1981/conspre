@@ -66,19 +66,21 @@ public class MaterialRequestService {
 
         MaterialRequest entity = new MaterialRequest();
 
-        for (RequestMaterialItemDTO itemDTO : dto.getItems()){
-            Material material = materialRepository.findById(itemDTO.getMaterialId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Material not found"));
-
-            entity.addItem(material, itemDTO.getQuantity());
-            entity = materialRequestRepository.save(entity);
-        }
-
         entity.setMoment(Instant.now());
         entity.setEmployee(employee);
         entity.setUser(user);
         entity.setObservation(dto.getObservation());
         entity.setAtivo(true);
+
+        for (RequestMaterialItemDTO itemDTO : dto.getItems()){
+            Material material = materialRepository.findById(itemDTO.getMaterialId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Material not found"));
+
+            entity.addItem(material, itemDTO.getQuantity());
+
+        }
+
+        entity = materialRequestRepository.save(entity);
 
         return new MaterialRequestResponseDTO(entity);
     }
