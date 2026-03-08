@@ -4,6 +4,7 @@ package com.jeferson.conspre.entity;
 import com.jeferson.conspre.enums.Status;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +17,7 @@ public class MaterialRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Instant moment;
-    private Status statusRequest;
+
     private String observation;
 
     @ManyToOne()
@@ -27,20 +28,104 @@ public class MaterialRequest {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    @OneToMany(mappedBy = "materialRequest")
+    private Boolean ativo = true;
+
+    @OneToMany(mappedBy = "materialRequest",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private Set<RequestMaterialItem> requestMaterialItems = new HashSet<>();
 
-    public MaterialRequest(){
-
+    @PrePersist
+    public void prePersist() {
+        this.moment = Instant.now();
     }
 
-    public MaterialRequest(Long id, Instant moment, Status statusRequest, String observation, User user, Employee employee) {
+    public MaterialRequest(){
+        this.ativo = true;
+    }
+
+    public MaterialRequest(Long id, Instant moment, String observation, User user, Employee employee, boolean ativo) {
         this.id = id;
         this.moment = moment;
-        this.statusRequest = statusRequest;
         this.observation = observation;
         this.user = user;
         this.employee = employee;
+        this.ativo = ativo;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Instant getMoment() {
+        return moment;
+    }
+
+    public void setMoment(Instant moment) {
+        this.moment = moment;
+    }
+
+    public String getObservation() {
+        return observation;
+    }
+
+    public void setObservation(String observation) {
+        this.observation = observation;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public Set<RequestMaterialItem> getRequestMaterialItems() {
+        return requestMaterialItems;
+    }
+
+    public void addItem(RequestMaterialItem item) {
+        requestMaterialItems.add(item);
+        item.setMaterialRequest(this);
+    }
+
+    public void removeItem(RequestMaterialItem item) {
+        requestMaterialItems.remove(item);
+        item.setMaterialRequest(null);
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
+    public void addItem(Material material, BigDecimal quantity) {
+
+        RequestMaterialItem item = new RequestMaterialItem();
+        item.setMaterial(material);
+        item.setQuantity(quantity);
+
+        // 🔹 importante: setar o lado ManyToOne
+        item.setMaterialRequest(this);
+
+        // 🔹 adicionar na lista
+        this.requestMaterialItems.add(item);
     }
 
     @Override
@@ -56,4 +141,6 @@ public class MaterialRequest {
     public int hashCode() {
         return id.hashCode();
     }
+
+
 }

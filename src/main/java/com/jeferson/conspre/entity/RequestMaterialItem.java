@@ -3,6 +3,7 @@ package com.jeferson.conspre.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tb_Request_Material_Item")
@@ -67,14 +68,13 @@ public class RequestMaterialItem {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (!(o instanceof RequestMaterialItem)) return false;
         RequestMaterialItem that = (RequestMaterialItem) o;
-        return id.equals(that.id);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return id == null ? 0 : id.hashCode();
     }
 }
