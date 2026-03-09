@@ -3,10 +3,8 @@ package com.jeferson.conspre.services;
 import com.jeferson.conspre.dto.MaterialRequestCreateDTO;
 import com.jeferson.conspre.dto.MaterialRequestResponseDTO;
 import com.jeferson.conspre.dto.RequestMaterialItemDTO;
-import com.jeferson.conspre.entity.Employee;
-import com.jeferson.conspre.entity.Material;
-import com.jeferson.conspre.entity.MaterialRequest;
-import com.jeferson.conspre.entity.User;
+import com.jeferson.conspre.entity.*;
+import com.jeferson.conspre.enums.TypeMovement;
 import com.jeferson.conspre.repositories.*;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Service
@@ -27,7 +26,7 @@ public class MaterialRequestService {
     private MaterialRequestRepository materialRequestRepository;
 
     @Autowired
-    private StockMovementRepository stockMovementRepository;
+    private StockMovementsService service;
 
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -39,7 +38,7 @@ public class MaterialRequestService {
     public Page<MaterialRequestResponseDTO> findAll(Long employeeId, Boolean ativo, Instant dateMin, Instant dateMax, String observation, Pageable pageable) {
 
         Page<MaterialRequest> result = materialRequestRepository.search(
-                employeeId, ativo, dateMax, dateMin, observation, pageable);
+                employeeId, ativo, dateMin, dateMax, observation, pageable);
 
         return result.map(x -> new MaterialRequestResponseDTO(x));
     }
@@ -58,11 +57,13 @@ public class MaterialRequestService {
     @Transactional
     public MaterialRequestResponseDTO create(MaterialRequestCreateDTO dto) {
 
-        Employee employee = employeeRepository.findById(dto.getEmployeeId()).orElseThrow(
-                ()-> new ResourceNotFoundException("Funcionário com id: " + dto.getEmployeeId() + " não encontrado."));
+        Employee employee = employeeRepository.findById(dto.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Funcionário com id: " + dto.getEmployeeId() + " não encontrado."));
 
-        User user = userRepository.findById(dto.getUserId()).orElseThrow(
-                ()-> new ResourceNotFoundException("Usuário com id: " + dto.getUserId() + " não encontrado."));
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário com id: " + dto.getUserId() + " não encontrado."));
 
         MaterialRequest entity = new MaterialRequest();
 
@@ -72,19 +73,46 @@ public class MaterialRequestService {
         entity.setObservation(dto.getObservation());
         entity.setAtivo(true);
 
-        for (RequestMaterialItemDTO itemDTO : dto.getItems()){
+        // Adiciona itens e valida estoque
+        for (RequestMaterialItemDTO itemDTO : dto.getItems()) {
+
             Material material = materialRepository.findById(itemDTO.getMaterialId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Material not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Material com id: " + itemDTO.getMaterialId() + " não encontrado."));
+
+            BigDecimal currentStock = service.calculateStock(material.getId());
+
+            if (currentStock.compareTo(itemDTO.getQuantity()) < 0) {
+                throw new RuntimeException(
+                        "Estoque insuficiente para o material: "
+                                + material.getName()
+                                + ". Estoque atual: "
+                                + currentStock
+                );
+            }
 
             entity.addItem(material, itemDTO.getQuantity());
-
         }
 
+        // Salva a requisição
         entity = materialRequestRepository.save(entity);
+
+        // Gera movimentações de estoque
+        for (RequestMaterialItem item : entity.getRequestMaterialItems()) {
+
+            service.createMovement(
+                    TypeMovement.OUTPUT,
+                    item.getMaterial(),
+                    item.getQuantity(),
+                    "Saída por requisição " + entity.getId(),
+                    user,
+                    employee,
+                    entity
+            );
+        }
 
         return new MaterialRequestResponseDTO(entity);
     }
-
 
     public void delete(Long id) {
 

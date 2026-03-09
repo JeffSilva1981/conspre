@@ -10,12 +10,13 @@ public class StockMovementResponseDTO {
 
     private Long id;
     private TypeMovement type;
-    private Instant date;
+    private Instant moment;
     private BigDecimal quantity;
-    private String observation;
-
     private Long materialId;
     private String materialName;
+    private Long materialRequestId;
+    private Long userId;
+    private String userName;
 
     public StockMovementResponseDTO() {
 
@@ -24,41 +25,88 @@ public class StockMovementResponseDTO {
     public StockMovementResponseDTO(StockMovement entity) {
         this.id = entity.getId();
         this.type = entity.getType();
-        this.date = entity.getDate();
+        this.moment = entity.getMoment();
         this.quantity = entity.getQuantity();
-        this.observation = entity.getObservation();
+        this.materialId = entity.getMaterial().getId();
+        this.materialName = entity.getMaterial().getName();
 
         if (entity.getMaterial() != null) {
-            this.materialId = entity.getMaterial().getId();
-            this.materialName = entity.getMaterial().getName();
+            this.materialRequestId = entity.getMaterialRequest().getId();
         }
+
+        this.userId = entity.getUser().getId();
+        this.userName = entity.getUser().getName();
     }
 
     public Long getId() {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public TypeMovement getType() {
         return type;
     }
 
-    public Instant getDate() {
-        return date;
+    public void setType(TypeMovement type) {
+        this.type = type;
+    }
+
+    public Instant getMoment() {
+        return moment;
+    }
+
+    public void setMoment(Instant moment) {
+        this.moment = moment;
     }
 
     public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public String getObservation() {
-        return observation;
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
     }
 
     public Long getMaterialId() {
         return materialId;
     }
 
+    public void setMaterialId(Long materialId) {
+        this.materialId = materialId;
+    }
+
     public String getMaterialName() {
         return materialName;
+    }
+
+    public void setMaterialName(String materialName) {
+        this.materialName = materialName;
+    }
+
+    public Long getMaterialRequestId() {
+        return materialRequestId;
+    }
+
+    public void setMaterialRequestId(Long materialRequestId) {
+        this.materialRequestId = materialRequestId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

@@ -19,7 +19,7 @@ public class StockMovement {
     private TypeMovement type;
 
     @Column(nullable = false)
-    private Instant date;
+    private Instant moment;
 
 
     @Column(nullable = false, precision = 19, scale = 4)
@@ -46,18 +46,18 @@ public class StockMovement {
 
     @PrePersist
     public void prePersist() {
-        this.date = Instant.now();
+        this.moment = Instant.now();
     }
 
     public StockMovement(){
 
     }
 
-    public StockMovement(Long id, TypeMovement type, Instant date, BigDecimal quantity, String observation, Material material,
+    public StockMovement(Long id, TypeMovement type, Instant moment, BigDecimal quantity, String observation, Material material,
                          User user, Employee employee, MaterialRequest materialRequest) {
         this.id = id;
         this.type = type;
-        this.date = date;
+        this.moment = moment;
         this.quantity = quantity;
         this.observation = observation;
         this.material = material;
@@ -82,12 +82,12 @@ public class StockMovement {
         this.type = type;
     }
 
-    public Instant getDate() {
-        return date;
+    public Instant getMoment() {
+        return moment;
     }
 
-    public void setDate(Instant date) {
-        this.date = date;
+    public void setMoment(Instant moment) {
+        this.moment = moment;
     }
 
     public BigDecimal getQuantity() {
@@ -141,14 +141,13 @@ public class StockMovement {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (!(o instanceof StockMovement)) return false;
         StockMovement that = (StockMovement) o;
-        return id.equals(that.id);
+        return id != null && id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return 31;
     }
 }

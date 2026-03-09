@@ -7,11 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 @RestController
@@ -25,13 +23,19 @@ public class StockMovementResource {
     public ResponseEntity<Page<StockMovementResponseDTO>> findAllPage(
             @RequestParam(required = false) String materialName,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)Instant moment,
             Pageable pageable
             ) {
 
-        Page<StockMovementResponseDTO> result = service.findAll(materialName, date, pageable);
+        Page<StockMovementResponseDTO> result = service.findAll(materialName, moment, pageable);
 
         return ResponseEntity.ok(result);
 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StockMovementResponseDTO> findById(@PathVariable Long id){
+        StockMovementResponseDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
     }
 }

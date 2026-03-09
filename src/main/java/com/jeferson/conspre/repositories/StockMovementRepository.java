@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
            SELECT s FROM StockMovement s
            WHERE (:materialName IS NULL 
                   OR LOWER(s.material.name) LIKE LOWER(CONCAT('%', :materialName, '%')))
-           AND (:date IS NULL 
-                  OR s.date = :date)
+           AND (:moment IS NULL 
+                  OR s.moment = :moment)
            """)
-    Page<StockMovement> search(String materialName, LocalDate date, Pageable pageable);
+    Page<StockMovement> search(String materialName, Instant moment, Pageable pageable);
 }
