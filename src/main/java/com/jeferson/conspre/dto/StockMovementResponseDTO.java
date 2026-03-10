@@ -2,6 +2,8 @@ package com.jeferson.conspre.dto;
 
 import com.jeferson.conspre.entity.StockMovement;
 import com.jeferson.conspre.enums.TypeMovement;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -11,7 +13,11 @@ public class StockMovementResponseDTO {
     private Long id;
     private TypeMovement type;
     private Instant moment;
+
+    @NotNull
+    @Positive
     private BigDecimal quantity;
+
     private Long materialId;
     private String materialName;
     private Long materialRequestId;
@@ -30,7 +36,7 @@ public class StockMovementResponseDTO {
         this.materialId = entity.getMaterial().getId();
         this.materialName = entity.getMaterial().getName();
 
-        if (entity.getMaterial() != null) {
+        if (entity.getMaterialRequest() != null) {
             this.materialRequestId = entity.getMaterialRequest().getId();
         }
 

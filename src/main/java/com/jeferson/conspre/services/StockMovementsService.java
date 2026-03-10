@@ -1,9 +1,13 @@
 package com.jeferson.conspre.services;
 
+import com.jeferson.conspre.dto.StockMaterialDTO;
+import com.jeferson.conspre.dto.StockMovementInputDTO;
 import com.jeferson.conspre.dto.StockMovementResponseDTO;
 import com.jeferson.conspre.entity.*;
 import com.jeferson.conspre.enums.TypeMovement;
+import com.jeferson.conspre.repositories.MaterialRepository;
 import com.jeferson.conspre.repositories.StockMovementRepository;
+import com.jeferson.conspre.repositories.UserRepository;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -22,6 +25,11 @@ public class StockMovementsService {
     @Autowired
     private StockMovementRepository repository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MaterialRepository materialRepository;
 
     @Transactional(readOnly = true)
     public Page<StockMovementResponseDTO> findAll(String materialName, Instant moment, Pageable pageable) {
@@ -47,6 +55,7 @@ public class StockMovementsService {
         StockMovement movement = new StockMovement();
 
         movement.setType(type);
+        movement.setMoment(Instant.now());
         movement.setMaterial(material);
         movement.setQuantity(quantity);
         movement.setObservation(observation);
@@ -55,6 +64,49 @@ public class StockMovementsService {
         movement.setMaterialRequest(request);
 
         return repository.save(movement);
+    }
+
+    @Transactional
+    public StockMovementResponseDTO createInputMovement(StockMovementInputDTO dto) {
+
+        Material material = materialRepository.findById(dto.getMaterialId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Material não encontrado"));
+
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuário não encontrado"));
+
+
+        StockMovement movement = new StockMovement();
+
+        movement.setType(TypeMovement.INPUT);
+        movement.setMoment(Instant.now());
+        movement.setMaterial(material);
+        movement.setQuantity(dto.getQuantity());
+        movement.setObservation(dto.getObservation());
+        movement.setUser(user);
+
+        movement = repository.save(movement);
+
+        return new StockMovementResponseDTO(movement);
+
+    }
+
+    @Transactional(readOnly = true)
+    public StockMaterialDTO getMaterialStock(Long materialId) {
+
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Material não encontrado"));
+
+        BigDecimal stock = calculateStock(materialId);
+
+        return new StockMaterialDTO(
+                material.getId(),
+                material.getName(),
+                stock
+        );
     }
 
     @Transactional(readOnly = true)
