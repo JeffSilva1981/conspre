@@ -38,26 +38,30 @@ public class Material {
 
     private Boolean ativo;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @ManyToMany
+    @JoinTable(
+            name = "tb_material_category",
+            joinColumns = @JoinColumn(name = "material_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "material")
     private Set<StockMovement> stockMovements = new HashSet<>();
 
-    public Material(){
+    public Material() {
 
     }
 
-    public Material(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock, BigDecimal minimumStock,
-                    boolean ativo, Category category) {
+    public Material(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock, BigDecimal minimumStock, Boolean ativo,
+                    Set<Category> categories) {
         this.id = id;
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
         this.currentStock = currentStock;
         this.minimumStock = minimumStock;
         this.ativo = ativo;
-        this.category = category;
+        this.categories = categories;
     }
 
     public Long getId() {
@@ -108,12 +112,12 @@ public class Material {
         this.ativo = ativo;
     }
 
-    public Category getCategory() {
-        return category;
+    public Boolean getAtivo() {
+        return ativo;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public Set<Category> getCategories() {
+        return categories;
     }
 
     public Set<StockMovement> getStockMovements() {
@@ -123,14 +127,13 @@ public class Material {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Material material = (Material) o;
-        return id.equals(material.id);
+        if (!(o instanceof Material)) return false;
+        Material other = (Material) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return getClass().hashCode();
     }
 }

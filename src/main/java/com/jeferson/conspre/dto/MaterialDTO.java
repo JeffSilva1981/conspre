@@ -1,6 +1,7 @@
 package com.jeferson.conspre.dto;
 
 
+import com.jeferson.conspre.entity.Category;
 import com.jeferson.conspre.entity.Material;
 import com.jeferson.conspre.enums.TypeUnit;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class MaterialDTO {
@@ -32,21 +35,21 @@ public class MaterialDTO {
     private Boolean ativo;
 
     @NotNull(message = "Categoria é obrigatória")
-    private Long categoryId;
+    private Set<CategoryDTO> categories = new HashSet<>();
 
-    public MaterialDTO(){
+    public MaterialDTO() {
 
     }
 
     public MaterialDTO(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock,
-                       BigDecimal minimumStock, Boolean ativo, Long categoryId) {
+                       BigDecimal minimumStock, Boolean ativo, Set<CategoryDTO> categories) {
         this.id = id;
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
         this.currentStock = currentStock;
         this.minimumStock = minimumStock;
         this.ativo = ativo;
-        this.categoryId = categoryId;
+        this.categories = categories;
     }
 
     public MaterialDTO(Material entity) {
@@ -56,10 +59,12 @@ public class MaterialDTO {
         currentStock = entity.getCurrentStock();
         minimumStock = entity.getMinimumStock();
         ativo = entity.isAtivo();
+    }
 
-        if (entity.getCategory() != null) {
-            categoryId = entity.getCategory().getId();
-        }
+    public MaterialDTO(Material entity, Set<Category> categories) {
+        this(entity);
+
+        categories.forEach(cat -> this.categories.add(new CategoryDTO(cat)));
     }
 
     public Long getId() {
@@ -110,11 +115,7 @@ public class MaterialDTO {
         this.ativo = ativo;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public Set<CategoryDTO> getCategories() {
+        return categories;
     }
 }

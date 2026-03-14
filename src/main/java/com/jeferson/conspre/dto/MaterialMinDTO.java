@@ -28,12 +28,16 @@ public class MaterialMinDTO {
     @NotNull(message = "Categoria é obrigatória")
     private Long categoryId;
 
-    public MaterialMinDTO(){
+    public MaterialMinDTO() {
 
     }
 
-    public MaterialMinDTO(Long id, String name, TypeUnit unitOfMeasure,
-                          BigDecimal currentStock, Boolean ativo, Long categoryId) {
+    public MaterialMinDTO(Long id,
+                          String name,
+                          TypeUnit unitOfMeasure,
+                          BigDecimal currentStock,
+                          Boolean ativo,
+                          Long categoryId) {
         this.id = id;
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
@@ -48,10 +52,6 @@ public class MaterialMinDTO {
         unitOfMeasure = entity.getUnitOfMeasure();
         currentStock = entity.getCurrentStock();
         ativo = entity.isAtivo();
-
-        if (entity.getCategory() != null) {
-            categoryId = entity.getCategory().getId();
-        }
     }
 
     public Long getId() {

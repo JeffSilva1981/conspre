@@ -1,6 +1,7 @@
 package com.jeferson.conspre.services;
 
 
+import com.jeferson.conspre.dto.CategoryDTO;
 import com.jeferson.conspre.dto.MaterialDTO;
 import com.jeferson.conspre.dto.MaterialMinDTO;
 import com.jeferson.conspre.entity.Category;
@@ -9,7 +10,6 @@ import com.jeferson.conspre.repositories.CategoryRepository;
 import com.jeferson.conspre.repositories.MaterialRepository;
 import com.jeferson.conspre.services.exceptions.DatabaseException;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +34,7 @@ public class MaterialService {
 
     @Transactional(readOnly = true)
     public MaterialDTO findById(Long id) {
-        Material entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Material "+ id +" não encontrado."));
+        Material entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Material " + id + " não encontrado."));
         return new MaterialDTO(entity);
     }
 
@@ -60,11 +60,11 @@ public class MaterialService {
             throw new DatabaseException("Já existe um material ativo com esse nome");
         }
 
-            Material entity = repository.getReferenceById(id);
-            copyDtoToEntity(entity, dto);
-            entity.setAtivo(true);
-            entity = repository.save(entity);
-            return new MaterialDTO(entity);
+        Material entity = repository.getReferenceById(id);
+        copyDtoToEntity(entity, dto);
+        entity.setAtivo(true);
+        entity = repository.save(entity);
+        return new MaterialDTO(entity);
     }
 
 
@@ -73,7 +73,7 @@ public class MaterialService {
 
         Material entity = repository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Material "+ id +" não encontrado." )
+                        new ResourceNotFoundException("Material " + id + " não encontrado.")
                 );
 
         entity.setAtivo(false);
@@ -87,8 +87,13 @@ public class MaterialService {
         entity.setCurrentStock(dto.getCurrentStock());
         entity.setMinimumStock(dto.getMinimumStock());
 
-        Category category = categoryRepository.getReferenceById(dto.getCategoryId());
-        entity.setCategory(category);
+        entity.getCategories().clear();
+
+        for (CategoryDTO category : dto.getCategories()) {
+
+            Category cat = categoryRepository.getReferenceById(category.getId());
+            entity.getCategories().add(cat);
+        }
 
     }
 

@@ -23,10 +23,10 @@ public class Category {
     private String description;
     private boolean ativo;
 
-    @OneToMany(mappedBy = "category")
+    @ManyToMany(mappedBy = "categories")
     private Set<Material> materials = new HashSet<>();
 
-    public Category(){
+    public Category() {
 
     }
 
