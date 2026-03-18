@@ -50,16 +50,13 @@ public class MaterialRepositoryTests {
         Material material = Factory.createNewMaterial();
         material.setId(null);
         material = repository.save(material);
-
         Assertions.assertNotNull(material.getId());
-        Assertions.assertEquals(material.getName(), material.getName());
     }
 
     @Test
     public void findByIdShouldReturnObjectWhenIdExists() {
 
         Optional<Material> result = repository.findById(existingId);
-
         Assertions.assertTrue(result.isPresent());
     }
 
@@ -67,7 +64,6 @@ public class MaterialRepositoryTests {
     public void findByIdShouldReturnEmptyWhenIdDoesNotExist() {
 
         Optional<Material> result = repository.findById(nonExistingId);
-
         Assertions.assertFalse(result.isPresent());
     }
 
@@ -75,11 +71,8 @@ public class MaterialRepositoryTests {
     public void saveShouldUpdateObjectWhenIdExists() {
 
         Material material = repository.findById(existingId).get();
-
         material.setName("Material Atualizado");
-
         material = repository.save(material);
-
         Assertions.assertEquals("Material Atualizado", material.getName());
     }
 
@@ -87,11 +80,10 @@ public class MaterialRepositoryTests {
     public void searchShouldReturnPageWhenMaterialExists() {
 
         PageRequest pageRequest = PageRequest.of(0, 10);
-
         Page<MaterialMinDTO> result = repository.search(null, null, null, null, pageRequest);
-
         Assertions.assertNotNull(result);
+        Assertions.assertFalse(result.isEmpty());
 
     }
-    
+
 }

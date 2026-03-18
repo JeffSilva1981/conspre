@@ -14,20 +14,21 @@ public interface MaterialRequestRepository extends JpaRepository<MaterialRequest
 
 
     @Query("""
-    SELECT m FROM MaterialRequest m
-    WHERE
-        (:employeeId IS NULL OR m.employee.id = :employeeId)
-    AND (:ativo IS NULL OR m.ativo = :ativo)
-    AND (:dateMin IS NULL OR m.moment >= :dateMin)
-    AND (:dateMax IS NULL OR m.moment <= :dateMax)
-    AND (:observation IS NULL OR m.observation <= :observation)
-""")
+                SELECT m FROM MaterialRequest m
+                WHERE
+                    (:employeeId IS NULL OR m.employee.id = :employeeId)
+                AND (:ativo IS NULL OR m.ativo = :ativo)
+                AND (:dateMin IS NULL OR m.moment >= :dateMin)
+                AND (:dateMax IS NULL OR m.moment <= :dateMax)
+                AND (:observation IS NULL OR LOWER(m.observation) LIKE LOWER(CONCAT('%', :observation, '%')))
+            """)
     Page<MaterialRequest> search(
             Long employeeId,
             Boolean ativo,
             Instant dateMin,
             Instant dateMax,
-            String observation, Pageable pageable
+            String observation,
+            Pageable pageable
     );
 
 }

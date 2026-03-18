@@ -22,7 +22,7 @@ public class Employee {
     @OneToMany(mappedBy = "employee")
     private List<MaterialRequest> materialRequests = new ArrayList<>();
 
-    public Employee(){
+    public Employee() {
 
     }
 
@@ -76,14 +76,13 @@ public class Employee {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Employee employee = (Employee) o;
-        return id.equals(employee.id);
+        if (!(o instanceof Employee)) return false;
+        Employee other = (Employee) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return getClass().hashCode();
     }
 }
