@@ -40,4 +40,6 @@ public class StockMaterialDTO {
     public void setStock(BigDecimal stock) {
         this.stock = stock;
     }
+
+
 }
