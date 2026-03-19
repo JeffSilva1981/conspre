@@ -67,7 +67,6 @@ public class MaterialService {
         return new MaterialDTO(entity);
     }
 
-
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
 

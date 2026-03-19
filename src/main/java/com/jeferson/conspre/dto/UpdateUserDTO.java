@@ -16,12 +16,24 @@ public class UpdateUserDTO {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getLogin() {
         return login;
     }
 
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
     public boolean isAtivo() {
         return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     public Set<Long> getRoleIds() {

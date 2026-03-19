@@ -21,11 +21,23 @@ public class StockMaterialDTO {
         return materialId;
     }
 
+    public void setMaterialId(Long materialId) {
+        this.materialId = materialId;
+    }
+
     public String getMaterialName() {
         return materialName;
     }
 
+    public void setMaterialName(String materialName) {
+        this.materialName = materialName;
+    }
+
     public BigDecimal getStock() {
         return stock;
+    }
+
+    public void setStock(BigDecimal stock) {
+        this.stock = stock;
     }
 }

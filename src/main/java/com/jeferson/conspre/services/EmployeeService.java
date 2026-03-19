@@ -2,9 +2,7 @@ package com.jeferson.conspre.services;
 
 import com.jeferson.conspre.dto.EmployeeDTO;
 import com.jeferson.conspre.dto.EmployeeMinDTO;
-import com.jeferson.conspre.dto.MaterialDTO;
 import com.jeferson.conspre.entity.Employee;
-import com.jeferson.conspre.entity.Material;
 import com.jeferson.conspre.repositories.EmployeeRepository;
 import com.jeferson.conspre.services.exceptions.DatabaseException;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
@@ -15,8 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.parser.Entity;
-
 @Service
 public class EmployeeService {
 
@@ -25,12 +21,12 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public Page<EmployeeMinDTO> findAll(String name, Pageable pageable) {
-       return repository.search(name, pageable);
+        return repository.search(name, pageable);
     }
 
     @Transactional(readOnly = true)
     public EmployeeDTO findById(Long id) {
-        Employee entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Funcionário com id:  "+ id +" não encontrado."));
+        Employee entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Funcionário com id:  " + id + " não encontrado."));
         return new EmployeeDTO(entity);
     }
 
@@ -55,14 +51,14 @@ public class EmployeeService {
         }
 
         try {
-            Employee entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Employee " + id + " não encontrado"));
+            Employee entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Employee " + id + " não encontrado"));
             copyDtoToEntity(entity, dto);
             entity.setAtivo(true);
             entity = repository.save(entity);
             return new EmployeeDTO(entity);
 
-        }catch (EntityNotFoundException e){
-            throw new ResourceNotFoundException("Funcionário com id:  "+ id +" não encontrado.");
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Funcionário com id:  " + id + " não encontrado.");
         }
     }
 
@@ -70,7 +66,7 @@ public class EmployeeService {
 
         Employee entity = repository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Funcionário com id:  "+ id +" não encontrado." )
+                        new ResourceNotFoundException("Funcionário com id:  " + id + " não encontrado.")
                 );
 
         entity.setAtivo(false);
