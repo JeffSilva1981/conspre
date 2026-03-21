@@ -5,7 +5,10 @@ import com.jeferson.conspre.dto.MaterialRequestResponseDTO;
 import com.jeferson.conspre.dto.RequestMaterialItemDTO;
 import com.jeferson.conspre.entity.*;
 import com.jeferson.conspre.enums.TypeMovement;
-import com.jeferson.conspre.repositories.*;
+import com.jeferson.conspre.repositories.EmployeeRepository;
+import com.jeferson.conspre.repositories.MaterialRepository;
+import com.jeferson.conspre.repositories.MaterialRequestRepository;
+import com.jeferson.conspre.repositories.UserRepository;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,9 +50,13 @@ public class MaterialRequestService {
     public MaterialRequestResponseDTO findById(Long id) {
 
         MaterialRequest entity = materialRequestRepository.findById(id).orElseThrow(
-                ()-> new ResourceNotFoundException("Requisição de Material com id: " + id + " não encontrada."));
+                () -> new ResourceNotFoundException("Requisição de Material com id: " + id + " não encontrada."));
 
-                return new MaterialRequestResponseDTO(entity);
+        if (!entity.isAtivo()) {
+            throw new ResourceNotFoundException("Requisição não encontrada");
+        }
+
+        return new MaterialRequestResponseDTO(entity);
 
     }
 
