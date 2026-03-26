@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Sistema de Estoque</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .btn-login {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h3 class="login-title">🔐 Login</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Usuário</label>
+        <input type="text" id="login" class="form-control" placeholder="Digite seu usuário">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Senha</label>
+        <input type="password" id="password" class="form-control" placeholder="Digite sua senha">
+    </div>
+
+    <button class="btn btn-primary btn-login" onclick="login()">
+        Entrar
+    </button>
+</div>
+
+<script>
+    async function login() {
+
+        const username = document.getElementById("login").value;
+        const password = document.getElementById("password").value;
+
+        const body = new URLSearchParams();
+        body.append("grant_type", "password");
+        body.append("username", username);
+        body.append("password", password);
+
+        const basicAuth = btoa("myclientid:myclientsecret");
+
+        try {
+            const response = await fetch("http://localhost:8080/oauth2/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": "Basic " + basicAuth
+                },
+                body: body
+            });
+
+            console.log("status:", response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+
+                localStorage.setItem("token", data.access_token);
+
+                alert("Login realizado com sucesso!");
+                window.location.href = "/home.html"; // IMPORTANTE: / na frente
+
+            } else {
+                const error = await response.text();
+                console.log(error);
+                alert("Login inválido");
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao conectar com o servidor");
+        }
+    }
+</script>
+
+</body>
+</html>

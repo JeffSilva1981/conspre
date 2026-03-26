@@ -35,7 +35,7 @@ public class StockMovementsService {
     public Page<StockMovementResponseDTO> findAll(String materialName, Instant moment, Pageable pageable) {
         Page<StockMovement> page = repository.search(materialName, moment, pageable);
 
-        return page.map((x-> new StockMovementResponseDTO(x)));
+        return page.map((x -> new StockMovementResponseDTO(x)));
     }
 
     @Transactional(readOnly = true)
@@ -48,10 +48,36 @@ public class StockMovementsService {
 
     @Transactional
     public StockMovement createMovement(
-            TypeMovement type, Material material,
-            BigDecimal quantity, String observation,
-            User user, Employee employee, MaterialRequest request) {
+            TypeMovement type,
+            Material material,
+            BigDecimal quantity,
+            String observation,
+            User user,
+            Employee employee,
+            MaterialRequest request) {
 
+        // 🔥 AJUSTA ESTOQUE
+        if (type == TypeMovement.OUTPUT) {
+
+            if (material.getCurrentStock().compareTo(quantity) < 0) {
+                throw new RuntimeException("Estoque insuficiente para o material: " + material.getName());
+            }
+
+            material.setCurrentStock(
+                    material.getCurrentStock().subtract(quantity)
+            );
+
+        } else if (type == TypeMovement.INPUT) {
+
+            material.setCurrentStock(
+                    material.getCurrentStock().add(quantity)
+            );
+        }
+
+        // 💾 SALVA MATERIAL ATUALIZADO
+        materialRepository.save(material);
+
+        // 🧾 CRIA MOVIMENTAÇÃO
         StockMovement movement = new StockMovement();
 
         movement.setType(type);
@@ -110,26 +136,26 @@ public class StockMovementsService {
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal calculateStock(Long materialId){
+    public BigDecimal calculateStock(Long materialId) {
 
         List<StockMovement> movements = repository.findByMaterialId(materialId);
 
         BigDecimal stock = BigDecimal.ZERO;
 
-        for (StockMovement m : movements){
+        for (StockMovement m : movements) {
 
-            if (m.getType() == TypeMovement.INPUT){
-               stock = stock.add(m.getQuantity());
+            if (m.getType() == TypeMovement.INPUT) {
+                stock = stock.add(m.getQuantity());
             }
-            if (m.getType() == TypeMovement.OUTPUT){
-              stock = stock.subtract(m.getQuantity());
+            if (m.getType() == TypeMovement.OUTPUT) {
+                stock = stock.subtract(m.getQuantity());
             }
         }
         return stock;
     }
 
     @Transactional(readOnly = true)
-    public List<StockMovementResponseDTO> findByRequest(Long requestId){
+    public List<StockMovementResponseDTO> findByRequest(Long requestId) {
 
         List<StockMovement> list = repository.findByMaterialRequestId(requestId);
 

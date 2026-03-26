@@ -9,20 +9,20 @@ public class MaterialRequestResponseDTO {
 
     private Long id;
     private Instant date;
-    private Long employeeId;
+    private String employeeName;
     private Long userId;
     private String observation;
 
     private List<RequestMaterialItemResponseDTO> items;
 
-    public MaterialRequestResponseDTO(){
+    public MaterialRequestResponseDTO() {
 
     }
 
-    public MaterialRequestResponseDTO(Long id, Instant date, Long employeeId, Long userId, String observation, List<RequestMaterialItemResponseDTO> items) {
+    public MaterialRequestResponseDTO(Long id, Instant date, String employeeName, Long userId, String observation, List<RequestMaterialItemResponseDTO> items) {
         this.id = id;
         this.date = date;
-        this.employeeId = employeeId;
+        this.employeeName = employeeName;
         this.userId = userId;
         this.observation = observation;
         this.items = items;
@@ -31,8 +31,16 @@ public class MaterialRequestResponseDTO {
     public MaterialRequestResponseDTO(MaterialRequest entity) {
         this.id = entity.getId();
         this.date = entity.getMoment();
-        this.employeeId = entity.getEmployee().getId();
-        this.userId = entity.getUser().getId();
+
+        if (entity.getEmployee() != null) {
+            this.observation = entity.getEmployee().getName();
+            this.employeeName = entity.getEmployee().getName(); // 🔥 AQUI
+        }
+
+        if (entity.getUser() != null) {
+            this.userId = entity.getUser().getId();
+        }
+
         this.observation = entity.getObservation();
 
         this.items = entity.getRequestMaterialItems().stream()
@@ -60,12 +68,12 @@ public class MaterialRequestResponseDTO {
         this.date = date;
     }
 
-    public Long getEmployeeId() {
-        return employeeId;
+    public String getEmployeeName() {
+        return employeeName;
     }
 
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 
     public Long getUserId() {

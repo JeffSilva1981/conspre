@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Categorias</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f4f6f9; }
+        .navbar { background:#1e3a8a; }
+
+        .box {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <span class="navbar-brand">📂 Categorias</span>
+</nav>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Lista de Categorias</h3>
+    </div>
+
+    <!-- FILTRO -->
+    <div class="box mb-3">
+        <div class="row g-2">
+
+            <div class="col-md-8">
+                <input id="filtroNome" class="form-control" placeholder="Buscar por nome">
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="buscar()">Buscar</button>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-success w-100" onclick="abrirModalNovo()">+ Nova</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="box">
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
+
+        <!-- PAGINAÇÃO -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <button class="btn btn-secondary" onclick="paginaAnterior()">⬅ Anterior</button>
+            <span id="infoPagina"></span>
+            <button class="btn btn-secondary" onclick="proximaPagina()">Próxima ➡</button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Categoria</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="inputId">
+
+                <div class="mb-2">
+                    <label>Nome</label>
+                    <input id="inputName" class="form-control">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+    const API = "http://localhost:8080";
+    const token = localStorage.getItem("token");
+
+    const tabela = document.getElementById("tabela");
+    const infoPagina = document.getElementById("infoPagina");
+
+    const inputId = document.getElementById("inputId");
+    const inputName = document.getElementById("inputName");
+
+    const filtroNome = document.getElementById("filtroNome");
+
+    let modal = new bootstrap.Modal(document.getElementById("modal"));
+
+    let pagina = 0;
+    let totalPaginas = 0;
+
+    if (!token){
+        window.location.href = "login.html";
+    }
+
+    // 🔥 ENTER PARA BUSCAR
+    filtroNome.addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            buscar();
+        }
+    });
+
+    listar();
+
+    function montarUrl(){
+
+        let url = API + "/categories?page=" + pagina + "&size=5";
+
+        const nome = filtroNome.value;
+
+        if (nome && nome.trim() !== ""){
+            url += "&name=" + encodeURIComponent(nome.trim());
+        }
+
+        return url;
+    }
+
+    async function listar(){
+
+        const res = await fetch(montarUrl(), {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+
+        const lista = data.content || data;
+
+        totalPaginas = data.totalPages || 1;
+
+        renderizar(lista);
+        atualizarInfo();
+    }
+
+    function buscar(){
+        pagina = 0;
+        listar();
+    }
+
+    function atualizarInfo(){
+        infoPagina.innerText = `Página ${pagina + 1} de ${totalPaginas}`;
+    }
+
+    function proximaPagina(){
+        if (pagina < totalPaginas - 1){
+            pagina++;
+            listar();
+        }
+    }
+
+    function paginaAnterior(){
+        if (pagina > 0){
+            pagina--;
+            listar();
+        }
+    }
+
+    function renderizar(lista){
+
+        tabela.innerHTML = "";
+
+        lista.forEach(c => {
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${c.id}</td>
+                    <td>${c.name}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editar(${c.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletar(${c.id})">Deletar</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function abrirModalNovo(){
+        inputId.value = "";
+        inputName.value = "";
+        modal.show();
+    }
+
+    async function editar(idParam){
+
+        const res = await fetch(API + "/categories/" + idParam, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const c = await res.json();
+
+        inputId.value = c.id;
+        inputName.value = c.name;
+
+        modal.show();
+    }
+
+    async function salvar(){
+
+        const body = {
+            name: inputName.value
+        };
+
+        let url = API + "/categories";
+        let method = "POST";
+
+        if (inputId.value){
+            url += "/" + inputId.value;
+            method = "PUT";
+        }
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok){
+            modal.hide();
+            listar();
+        } else {
+            const erro = await res.text();
+            alert("Erro: " + erro);
+        }
+    }
+
+    async function deletar(id){
+
+        if (!confirm("Deseja realmente deletar?")) return;
+
+        await fetch(API + "/categories/" + id, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        listar();
+    }
+
+</script>
+
+</body>
+</html>

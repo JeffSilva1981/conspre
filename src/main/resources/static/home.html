@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Sistema</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .navbar {
+            background-color: #0d6efd;
+        }
+
+        .card-hover:hover {
+            transform: scale(1.03);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Sistema de Estoque</span>
+        <button class="btn btn-light btn-sm" onclick="logout()">Sair</button>
+    </div>
+</nav>
+
+<div class="container mt-5">
+
+    <h3 class="mb-4">Bem-vindo!</h3>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card text-center card-hover" onclick="irParaEstoque()">
+                <div class="card-body">
+                    <h5 class="card-title">📦 Estoque</h5>
+                    <p class="card-text">Gerenciar materiais</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-center card-hover" onclick="irParaRequisicoes()">
+                <div class="card-body">
+                    <h5 class="card-title">🔄 Nova Requisição</h5>
+                    <p class="card-text">Criar pedidos de material</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-center card-hover" onclick="irParaConsultaRequisicoes()">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Consultar Requisições</h5>
+                    <p class="card-text">Visualizar requisições criadas</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-center card-hover" onclick="irParaFuncionarios()">
+                <div class="card-body">
+                    <h5 class="card-title">👷 Funcionários</h5>
+                    <p class="card-text">Listar funcionários cadastrados</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Você precisa fazer login");
+        window.location.href = "login.html";
+    }
+
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    }
+
+    function irParaEstoque() {
+        window.location.href = "materials.html";
+    }
+
+    function irParaRequisicoes() {
+        window.location.href = "material-request.html";
+    }
+
+    // ✅ CORRIGIDO AQUI
+    function irParaConsultaRequisicoes() {
+        window.location.href = "query-of-request.html";
+    }
+
+    function irParaFuncionarios() {
+        window.location.href = "employees.html";
+    }
+
+</script>
+
+</body>
+</html>

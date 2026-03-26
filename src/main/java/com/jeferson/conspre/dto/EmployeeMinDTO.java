@@ -1,25 +1,17 @@
 package com.jeferson.conspre.dto;
 
 import com.jeferson.conspre.entity.Employee;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public class EmployeeMinDTO {
 
     private Long id;
-
-    @NotBlank(message = "O nome da categoria é obrigatório")
-    @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
     private String name;
-
-    @NotBlank
-    @Size(min = 1, max = 60)
     private String registration;
 
 
     private Boolean ativo;
 
-    public EmployeeMinDTO(){
+    public EmployeeMinDTO() {
 
     }
 

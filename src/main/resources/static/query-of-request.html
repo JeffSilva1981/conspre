@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Requisições</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f4f6f9; }
+        .navbar { background:#1e3a8a; }
+
+        .box {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <span class="navbar-brand">📋 Consulta de Requisições</span>
+</nav>
+
+<div class="container mt-4">
+
+    <h3 class="mb-3">Requisições</h3>
+
+    <!-- FILTROS -->
+    <div class="box mb-3">
+
+        <div class="row g-2">
+
+            <div class="col-md-5">
+                <label>Funcionário</label>
+                <select id="filtroEmployee" class="form-control"></select>
+            </div>
+
+            <div class="col-md-5">
+                <label>Data</label>
+                <input id="filtroData" type="date" class="form-control">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100" onclick="buscar()">Buscar</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="box">
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Funcionário</th>
+                <th>Itens</th>
+                <th>Data</th>
+            </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
+
+        <div class="text-center mt-3" id="paginaInfo"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+    const API = "http://localhost:8080";
+    const token = localStorage.getItem("token");
+
+    const tabela = document.getElementById("tabela");
+    const paginaInfo = document.getElementById("paginaInfo");
+
+    const filtroEmployee = document.getElementById("filtroEmployee");
+    const filtroData = document.getElementById("filtroData");
+
+    if (!token){
+        window.location.href = "login.html";
+    }
+
+    // INIT
+    carregarFuncionarios();
+    listar();
+
+    // 🔹 CARREGAR FUNCIONÁRIOS
+    async function carregarFuncionarios(){
+        const res = await fetch(API + "/employees", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const lista = data.content || data;
+
+        filtroEmployee.innerHTML =
+            `<option value="">Todos</option>` +
+            lista.map(e => `<option value="${e.id}">${e.name}</option>`).join("");
+    }
+
+    // 🔹 LISTAR TODAS
+    async function listar(){
+
+        const res = await fetch(API + "/material-requests", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+
+        const lista = data.content || data;
+
+        paginaInfo.innerText = `Total: ${lista.length} registros`;
+
+        renderizar(lista);
+    }
+
+    // 🔍 BUSCAR
+    async function buscar(){
+
+        let url = API + "/material-requests";
+
+        const params = [];
+
+        if (filtroEmployee.value) params.push("employeeId=" + filtroEmployee.value);
+        if (filtroData.value) params.push("dateMin=" + filtroData.value);
+
+        if (params.length > 0){
+            url += "?" + params.join("&");
+        }
+
+        const res = await fetch(url, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+
+        const lista = data.content || data;
+
+        renderizar(lista);
+    }
+
+    // 🧱 RENDER
+    function renderizar(lista){
+
+        tabela.innerHTML = "";
+
+        if (!lista || lista.length === 0){
+            tabela.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">Nenhuma requisição encontrada</td>
+                </tr>
+            `;
+            return;
+        }
+
+        lista.forEach(r => {
+
+            // 👇 FUNCIONÁRIO
+            const funcionario =
+                r.employee?.name ||
+                r.employeeName ||
+                "-";
+
+            // 👇 ITENS
+            const itens =
+                r.items?.map(i => {
+                    const nome =
+                        i.material?.name ||
+                        i.materialName ||
+                        "Material";
+
+                    const qtd =
+                        i.quantity ||
+                        i.qtd ||
+                        0;
+
+                    return `${nome} (${qtd})`;
+                }).join(", ") || "-";
+
+            // 👇 DATA
+            const dataFormatada =
+                r.date ? new Date(r.date).toLocaleString("pt-BR") :
+                (r.moment ? new Date(r.moment).toLocaleString("pt-BR") : "-");
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${funcionario}</td>
+                    <td>${itens}</td>
+                    <td>${dataFormatada}</td>
+                </tr>
+            `;
+        });
+    }
+
+</script>
+
+</body>
+</html>

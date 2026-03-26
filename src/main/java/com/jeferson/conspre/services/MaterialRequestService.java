@@ -80,14 +80,14 @@ public class MaterialRequestService {
         entity.setObservation(dto.getObservation());
         entity.setAtivo(true);
 
-        // Adiciona itens e valida estoque
         for (RequestMaterialItemDTO itemDTO : dto.getItems()) {
 
             Material material = materialRepository.findById(itemDTO.getMaterialId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Material com id: " + itemDTO.getMaterialId() + " não encontrado."));
 
-            BigDecimal currentStock = service.calculateStock(material.getId());
+            // 🔥 CORREÇÃO AQUI
+            BigDecimal currentStock = material.getCurrentStock();
 
             if (currentStock.compareTo(itemDTO.getQuantity()) < 0) {
                 throw new RuntimeException(
@@ -101,10 +101,8 @@ public class MaterialRequestService {
             entity.addItem(material, itemDTO.getQuantity());
         }
 
-        // Salva a requisição
         entity = materialRequestRepository.save(entity);
 
-        // Gera movimentações de estoque
         for (RequestMaterialItem item : entity.getRequestMaterialItems()) {
 
             service.createMovement(

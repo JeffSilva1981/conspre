@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Estoque</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f4f6f9; }
+
+        .navbar { background:#1e3a8a; }
+
+        .table-container {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+        }
+
+        .btn-action {
+            margin-right:5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <span class="navbar-brand">📦 Estoque</span>
+</nav>
+
+<div class="container mt-4">
+
+    <h2>Materiais</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="toggleFiltros()">🔍 Filtros</button>
+        </div>
+
+        <div>
+            <button class="btn btn-success me-2" onclick="novo()">+ Novo Material</button>
+            <button class="btn btn-primary" onclick="irParaCategorias()">+ Nova Categoria</button>
+        </div>
+
+    </div>
+
+    <!-- FILTROS -->
+    <div id="filtros" class="card p-3 mb-3" style="display:none;">
+
+        <div class="row g-2">
+
+            <div class="col-md-3">
+                <input id="filtroNome" class="form-control" placeholder="Nome">
+            </div>
+
+            <div class="col-md-3">
+                <select id="filtroCategoria" class="form-control">
+                    <option value="">Todas Categorias</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select id="filtroAtivo" class="form-control">
+                    <option value="">Status</option>
+                    <option value="true">Ativo</option>
+                    <option value="false">Inativo</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select id="filtroEstoque" class="form-control">
+                    <option value="">Estoque</option>
+                    <option value="true">Com estoque</option>
+                    <option value="false">Sem estoque</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="buscar()">Buscar</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="table-container">
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Estoque</th>
+                <th>Mínimo</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+    const API = "http://localhost:8080";
+    const token = localStorage.getItem("token");
+
+    const selectCategoria = document.getElementById("filtroCategoria");
+
+    if (!token){
+        window.location.href = "/login.html";
+    }
+
+    listar();
+    carregarCategorias();
+
+    function toggleFiltros(){
+        const div = document.getElementById("filtros");
+        div.style.display = div.style.display === "none" ? "block" : "none";
+    }
+
+    function irParaCategorias(){
+        window.location.href = "/categories.html";
+    }
+
+    async function carregarCategorias(){
+
+        const res = await fetch(API + "/categories", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const lista = data.content || data;
+
+        selectCategoria.innerHTML += lista.map(c =>
+            `<option value="${c.id}">${c.name}</option>`
+        ).join("");
+    }
+
+    async function buscar(){
+
+        let url = API + "/materials";
+
+        const nome = document.getElementById("filtroNome").value;
+        const categoria = selectCategoria.value;
+        const ativo = document.getElementById("filtroAtivo").value;
+        const estoque = document.getElementById("filtroEstoque").value;
+
+        const params = [];
+
+        if (nome) params.push("name=" + nome);
+        if (categoria) params.push("categoryId=" + categoria);
+        if (ativo) params.push("ativo=" + ativo);
+        if (estoque) params.push("currentStock=" + estoque);
+
+        if (params.length > 0){
+            url += "?" + params.join("&");
+        }
+
+        const res = await fetch(url, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+
+        renderizar(data.content || data);
+    }
+
+    async function listar(){
+
+        const res = await fetch(API + "/materials", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+
+        renderizar(data.content || data);
+    }
+
+    function renderizar(lista){
+
+        const tabela = document.getElementById("tabela");
+        tabela.innerHTML = "";
+
+        lista.forEach(m => {
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${m.id}</td>
+                    <td>${m.name}</td>
+                    <td>${m.currentStock}</td>
+                    <td>${m.minimumStock ?? '-'}</td>
+                    <td>${m.ativo ? 'Ativo' : 'Inativo'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm btn-action" onclick="editar(${m.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletar(${m.id})">Excluir</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function editar(id){
+        window.location.href = "/material-form.html?id=" + id;
+    }
+
+    function novo(){
+        window.location.href = "/material-form.html";
+    }
+
+    async function deletar(id){
+
+        if (!confirm("Deseja deletar?")) return;
+
+        await fetch(API + "/materials/" + id, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        listar();
+    }
+
+</script>
+
+</body>
+</html>

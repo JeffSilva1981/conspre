@@ -1,5 +1,5 @@
 package com.jeferson.conspre.dto;
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -14,7 +14,7 @@ public class RequestMaterialItemDTO {
     @Positive(message = "Quantidade deve ser maior que zero")
     private BigDecimal quantity;
 
-    public RequestMaterialItemDTO(){
+    public RequestMaterialItemDTO() {
 
     }
 

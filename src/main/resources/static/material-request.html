@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Requisição de Material</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f4f6f9; }
+        .navbar { background:#1e3a8a; }
+
+        .box {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <span class="navbar-brand">🔄 Nova Requisição</span>
+</nav>
+
+<div class="container mt-4">
+
+    <h3 class="mb-3">Nova Requisição</h3>
+
+    <!-- FORM -->
+    <div class="box">
+
+        <div class="mb-3">
+            <label>Funcionário</label>
+            <select id="employee" class="form-control"></select>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-md-5">
+                <label>Material</label>
+                <select id="material" class="form-control"></select>
+            </div>
+
+            <div class="col-md-3">
+                <label>Quantidade</label>
+                <input id="quantity" type="number" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label>Observação</label>
+                <input id="observation" class="form-control">
+            </div>
+        </div>
+
+        <button class="btn btn-success mt-3" onclick="adicionarItem()">+ Adicionar Item</button>
+
+        <table class="table mt-3">
+            <thead>
+            <tr>
+                <th>Material</th>
+                <th>Quantidade</th>
+                <th>Ação</th>
+            </tr>
+            </thead>
+            <tbody id="itensTabela"></tbody>
+        </table>
+
+        <button class="btn btn-primary w-100" onclick="finalizar()">Finalizar Requisição</button>
+
+    </div>
+
+</div>
+
+<script>
+
+    const API = "http://localhost:8080";
+    const token = localStorage.getItem("token");
+
+    let itens = [];
+
+    const materialSelect = document.getElementById("material");
+    const employeeSelect = document.getElementById("employee");
+    const quantityInput = document.getElementById("quantity");
+    const observationInput = document.getElementById("observation");
+    const itensTabela = document.getElementById("itensTabela");
+
+    if (!token){
+        window.location.href = "login.html";
+    }
+
+    carregarMateriais();
+    carregarFuncionarios();
+
+    async function carregarMateriais(){
+        const res = await fetch(API + "/materials", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const lista = data.content || data;
+
+        materialSelect.innerHTML = lista.map(m =>
+            `<option value="${m.id}">${m.name}</option>`
+        ).join("");
+    }
+
+    async function carregarFuncionarios(){
+        const res = await fetch(API + "/employees", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        const data = await res.json();
+        const lista = data.content || data;
+
+        employeeSelect.innerHTML = lista.map(e =>
+            `<option value="${e.id}">${e.name}</option>`
+        ).join("");
+    }
+
+    function adicionarItem(){
+
+        const materialId = materialSelect.value;
+        const materialNome = materialSelect.options[materialSelect.selectedIndex]?.text;
+        const qtd = quantityInput.value;
+
+        if (!materialId || !qtd){
+            alert("Preencha material e quantidade");
+            return;
+        }
+
+        itens.push({
+            materialId: materialId,
+            nome: materialNome,
+            quantity: qtd
+        });
+
+        quantityInput.value = "";
+
+        renderizarItens();
+    }
+
+    function renderizarItens(){
+
+        itensTabela.innerHTML = "";
+
+        itens.forEach((item, i) => {
+            itensTabela.innerHTML += `
+                <tr>
+                    <td>${item.nome}</td>
+                    <td>${item.quantity}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="removerItem(${i})">X</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function removerItem(index){
+        itens.splice(index,1);
+        renderizarItens();
+    }
+
+    async function finalizar(){
+
+        if (itens.length === 0){
+            alert("Adicione pelo menos um item");
+            return;
+        }
+
+        const body = {
+            employeeId: parseInt(employeeSelect.value),
+            userId: 1,
+            observation: observationInput.value,
+            items: itens.map(i => ({
+                materialId: parseInt(i.materialId),
+                quantity: parseFloat(i.quantity)
+            }))
+        };
+
+        const res = await fetch(API + "/material-requests", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok){
+            alert("Requisição criada!");
+            itens = [];
+            renderizarItens();
+        } else {
+            const erro = await res.text();
+            console.error(erro);
+            alert("Erro ao criar requisição");
+        }
+    }
+
+</script>
+
+</body>
+</html>
