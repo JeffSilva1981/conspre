@@ -27,9 +27,8 @@ public class MaterialService {
     private CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
-    public Page<MaterialMinDTO> findAll(String name, Long categoryId, Boolean ativo,
-                                        Boolean currentStock, Pageable pageable) {
-        return repository.search(name, categoryId, ativo, currentStock, pageable);
+    public Page<MaterialMinDTO> findAll(Boolean currentStock, Pageable pageable) {
+        return repository.searchByStock(currentStock, pageable);
     }
 
     @Transactional(readOnly = true)

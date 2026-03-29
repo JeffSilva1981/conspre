@@ -23,36 +23,33 @@ public class MaterialResource {
 
     @GetMapping
     public ResponseEntity<Page<MaterialMinDTO>> findAll(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Boolean ativo,
             @RequestParam(required = false) Boolean currentStock,
-            Pageable pageable){
-        Page<MaterialMinDTO> dto = service.findAll(name, categoryId,ativo, currentStock, pageable);
+            Pageable pageable) {
+        Page<MaterialMinDTO> dto = service.findAll(currentStock, pageable);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaterialDTO> findById(@PathVariable Long id){
+    public ResponseEntity<MaterialDTO> findById(@PathVariable Long id) {
         MaterialDTO dto = service.findById(id);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public ResponseEntity<MaterialDTO> insert(@Valid @RequestBody MaterialDTO dto){
+    public ResponseEntity<MaterialDTO> insert(@Valid @RequestBody MaterialDTO dto) {
         MaterialDTO newDto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(newDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MaterialDTO> update(@PathVariable Long id,@Valid @RequestBody MaterialDTO dto){
+    public ResponseEntity<MaterialDTO> update(@PathVariable Long id, @Valid @RequestBody MaterialDTO dto) {
         MaterialDTO newDto = service.update(id, dto);
         return ResponseEntity.ok(newDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -20,28 +20,13 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
                     m.name,
                     m.unitOfMeasure,
                     m.currentStock,
-                    m.ativo,
-                    c.id
+                    m.ativo
                 )
                 FROM Material m
-                LEFT JOIN m.categories c
-                WHERE
-                    (:ativo IS NULL OR m.ativo = :ativo)
-                AND (:name IS NULL OR UPPER(m.name) LIKE UPPER(CONCAT('%', :name, '%')))
-                AND (:categoryId IS NULL OR c.id = :categoryId)
-                AND (
-                    :currentStock IS NULL
+                WHERE (:currentStock IS NULL
                     OR (:currentStock = true AND m.currentStock > 0)
-                    OR (:currentStock = false AND m.currentStock <= 0)
-                )
+                    OR (:currentStock = false AND m.currentStock <= 0))
+                ORDER BY m.name
             """)
-    Page<MaterialMinDTO> search(
-            @Param("name") String name,
-            @Param("categoryId") Long categoryId,
-            @Param("ativo") Boolean ativo,
-            @Param("currentStock") Boolean currentStock,
-            Pageable pageable
-    );
-
-
+    Page<MaterialMinDTO> searchByStock(@Param("currentStock") Boolean currentStock, Pageable pageable);
 }

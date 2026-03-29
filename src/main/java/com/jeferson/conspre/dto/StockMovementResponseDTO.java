@@ -40,8 +40,10 @@ public class StockMovementResponseDTO {
             this.materialRequestId = entity.getMaterialRequest().getId();
         }
 
-        this.userId = entity.getUser().getId();
-        this.userName = entity.getUser().getName();
+        if (entity.getUser() != null) {
+            this.userId = entity.getUser().getId();
+            this.userName = entity.getUser().getName();
+        }
     }
 
     public Long getId() {

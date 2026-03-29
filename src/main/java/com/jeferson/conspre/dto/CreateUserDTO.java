@@ -8,7 +8,7 @@ public class CreateUserDTO {
     private String login;
     private String password;
     private boolean ativo;
-    private Set<Long> roleIds;
+    private Set<String> role;
 
     public CreateUserDTO() {
     }
@@ -45,7 +45,11 @@ public class CreateUserDTO {
         this.ativo = ativo;
     }
 
-    public Set<Long> getRoleIds() {
-        return roleIds;
+    public Set<String> getRole() {
+        return role;
+    }
+
+    public void setRole(Set<String> role) {
+        this.role = role;
     }
 }

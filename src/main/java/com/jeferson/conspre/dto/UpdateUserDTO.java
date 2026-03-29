@@ -7,7 +7,7 @@ public class UpdateUserDTO {
     private String name;
     private String login;
     private boolean ativo;
-    private Set<Long> roleIds;
+    private Set<String> role;
 
     public UpdateUserDTO() {
     }
@@ -36,7 +36,7 @@ public class UpdateUserDTO {
         this.ativo = ativo;
     }
 
-    public Set<Long> getRoleIds() {
-        return roleIds;
+    public Set<String> getRole() {
+        return role;
     }
 }

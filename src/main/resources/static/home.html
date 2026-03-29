@@ -37,6 +37,7 @@
 
     <div class="row g-4">
 
+        <!-- ESTOQUE -->
         <div class="col-md-6">
             <div class="card text-center card-hover" onclick="irParaEstoque()">
                 <div class="card-body">
@@ -46,6 +47,7 @@
             </div>
         </div>
 
+        <!-- NOVA REQUISIÇÃO -->
         <div class="col-md-6">
             <div class="card text-center card-hover" onclick="irParaRequisicoes()">
                 <div class="card-body">
@@ -55,6 +57,7 @@
             </div>
         </div>
 
+        <!-- CONSULTAR -->
         <div class="col-md-6">
             <div class="card text-center card-hover" onclick="irParaConsultaRequisicoes()">
                 <div class="card-body">
@@ -64,11 +67,22 @@
             </div>
         </div>
 
+        <!-- FUNCIONÁRIOS -->
         <div class="col-md-6">
             <div class="card text-center card-hover" onclick="irParaFuncionarios()">
                 <div class="card-body">
                     <h5 class="card-title">👷 Funcionários</h5>
                     <p class="card-text">Listar funcionários cadastrados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔥 USUÁRIOS (SÓ ADMIN) -->
+        <div class="col-md-6" id="cardUsuarios">
+            <div class="card text-center card-hover" onclick="irParaUsuarios()">
+                <div class="card-body">
+                    <h5 class="card-title">👤 Usuários</h5>
+                    <p class="card-text">Gerenciar acessos do sistema</p>
                 </div>
             </div>
         </div>
@@ -85,6 +99,14 @@
         window.location.href = "login.html";
     }
 
+    // 🔥 VERIFICA ROLE DO USUÁRIO
+    const payload = JSON.parse(atob(token.split('.')[1]));
+
+    // ❌ ESCONDE SE NÃO FOR ADMIN
+    if (!payload.authorities.includes("ROLE_ADMIN")) {
+        document.getElementById("cardUsuarios").style.display = "none";
+    }
+
     function logout() {
         localStorage.removeItem("token");
         window.location.href = "login.html";
@@ -98,13 +120,17 @@
         window.location.href = "material-request.html";
     }
 
-    // ✅ CORRIGIDO AQUI
     function irParaConsultaRequisicoes() {
         window.location.href = "query-of-request.html";
     }
 
     function irParaFuncionarios() {
         window.location.href = "employees.html";
+    }
+
+    // 🔥 NOVA FUNÇÃO
+    function irParaUsuarios() {
+        window.location.href = "users.html";
     }
 
 </script>

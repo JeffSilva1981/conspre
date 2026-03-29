@@ -1,6 +1,7 @@
 package com.jeferson.conspre.entity;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ public class MaterialRequest {
 
     @OneToMany(mappedBy = "materialRequest",
             cascade = CascadeType.ALL,
-            orphanRemoval = true)
+            orphanRemoval = true,
+            fetch = FetchType.EAGER)
     private List<RequestMaterialItem> requestMaterialItems = new ArrayList<>();
 
     @PrePersist
@@ -37,7 +39,7 @@ public class MaterialRequest {
         this.moment = Instant.now();
     }
 
-    public MaterialRequest(){
+    public MaterialRequest() {
         this.ativo = true;
     }
 

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuários</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f4f6f9; }
+        .navbar { background:#1e3a8a; }
+
+        .box {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            text-align:center;
+            padding:20px;
+            font-weight:bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <span class="navbar-brand">👤 Usuários</span>
+</nav>
+
+<div class="container mt-4">
+
+    <h3>Gerenciamento de Usuários</h3>
+
+    <div id="alerta" class="alert d-none"></div>
+
+    <!-- FILTRO -->
+    <div class="box mb-3">
+        <div class="row g-2">
+            <div class="col-md-10">
+                <input id="filtroUsername" class="form-control" placeholder="Buscar por username">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="buscar()">Buscar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÃO NOVO -->
+    <div class="mb-3 text-end">
+        <button class="btn btn-success" onclick="abrirModalNovo()">+ Novo Usuário</button>
+    </div>
+
+    <!-- TABELA -->
+    <div class="box">
+        <div id="loading" class="loading d-none">Carregando...</div>
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Login</th>
+                <th>Perfil</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tabela"></tbody>
+        </table>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="paginaAnterior()">⬅ Anterior</button>
+            <span id="infoPagina"></span>
+            <button class="btn btn-secondary" onclick="proximaPagina()">Próxima ➡</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Usuário</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="inputId">
+
+                <div class="mb-2">
+                    <label>Nome</label>
+                    <input id="inputName" class="form-control">
+                </div>
+
+                <div class="mb-2">
+                    <label>Username</label>
+                    <input id="inputUsername" class="form-control">
+                </div>
+
+                <div class="mb-2">
+                    <label>Senha</label>
+                    <input id="inputPassword" type="password" class="form-control">
+                </div>
+
+                <div class="mb-2">
+                    <label>Perfil</label>
+                    <select id="inputRole" class="form-control">
+                        <option value="ROLE_USER">Usuário</option>
+                        <option value="ROLE_ADMIN">Administrador</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const API = "http://localhost:8080";
+    const token = localStorage.getItem("token");
+
+    const tabela = document.getElementById("tabela");
+    const alerta = document.getElementById("alerta");
+    const loading = document.getElementById("loading");
+    const infoPagina = document.getElementById("infoPagina");
+
+    const filtroUsername = document.getElementById("filtroUsername");
+
+    const inputId = document.getElementById("inputId");
+    const inputName = document.getElementById("inputName");
+    const inputUsername = document.getElementById("inputUsername");
+    const inputPassword = document.getElementById("inputPassword");
+    const inputRole = document.getElementById("inputRole");
+
+    let modal = new bootstrap.Modal(document.getElementById("modal"));
+
+    let pagina = 0;
+    let totalPaginas = 0;
+
+    if (!token) window.location.href = "login.html";
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (!payload.authorities || !payload.authorities.includes("ROLE_ADMIN")){
+        alert("Acesso restrito");
+        window.location.href = "home.html";
+    }
+
+    filtroUsername.addEventListener("keyup", e => { if (e.key === "Enter") buscar(); });
+
+    listar();
+
+    function mostrarMensagem(msg, tipo){
+        alerta.className = `alert alert-${tipo}`;
+        alerta.innerText = msg;
+        alerta.classList.remove("d-none");
+        setTimeout(() => alerta.classList.add("d-none"), 3000);
+    }
+
+    function montarUrl(){
+        let url = `${API}/users?page=${pagina}&size=10`;
+        if (filtroUsername.value) url += `&name=${filtroUsername.value.trim()}`;
+        return url;
+    }
+
+    async function listar(){
+        mostrarLoading();
+        const res = await fetch(montarUrl(), { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        esconderLoading();
+
+        totalPaginas = data.totalPages || 1;
+        renderizar(data.content || data);
+        atualizarInfo();
+    }
+
+    function buscar(){ pagina = 0; listar(); }
+    function atualizarInfo(){ infoPagina.innerText = `Página ${pagina + 1} de ${totalPaginas}`; }
+
+    function renderizar(lista){
+        tabela.innerHTML = "";
+
+        if (!lista || lista.length === 0){
+            tabela.innerHTML = `<tr><td colspan="5" class="text-center">Nenhum usuário encontrado</td></tr>`;
+            return;
+        }
+
+        lista.forEach(u => {
+
+            const id = u.id || "-";
+            const name = u.username || "-";   // 🔥 backend usa username
+            const username = u.username || "-";
+            const role = u.role || "-";       // 🔥 backend usa role
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${id}</td>
+                    <td>${name}</td>
+                    <td>${username}</td>
+                    <td>${role}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editar(${id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletar(${id})">Excluir</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function abrirModalNovo(){
+        inputId.value = "";
+        inputName.value = "";
+        inputUsername.value = "";
+        inputPassword.value = "";
+        inputRole.value = "ROLE_USER";
+        modal.show();
+    }
+
+    async function editar(id){
+        const res = await fetch(`${API}/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        const u = await res.json();
+
+        inputId.value = u.id;
+        inputName.value = u.username || "";
+        inputUsername.value = u.username || "";
+        inputPassword.value = "";
+        inputRole.value = u.role || "ROLE_USER";
+
+        modal.show();
+    }
+
+    async function salvar(){
+        if (!inputUsername.value.trim()){
+            mostrarMensagem("Username é obrigatório", "warning");
+            return;
+        }
+
+        const body = {
+            name: inputName.value.trim(),
+            login: inputUsername.value.trim(),
+            role: [inputRole.value]
+        };
+
+        if (inputPassword.value){
+            body.password = inputPassword.value;
+        }
+
+        let url = `${API}/users`;
+        let method = "POST";
+
+        if (inputId.value){
+            url += `/${inputId.value}`;
+            method = "PUT";
+        }
+
+        const res = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok){
+            modal.hide();
+            mostrarMensagem("Usuário salvo com sucesso", "success");
+            pagina = 0;
+            listar();
+        } else {
+            const erro = await res.text();
+            mostrarMensagem(erro || "Erro ao salvar usuário", "danger");
+        }
+    }
+
+    async function deletar(id){
+        if (!confirm("Deseja excluir este usuário?")) return;
+
+        await fetch(`${API}/users/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        mostrarMensagem("Usuário excluído", "success");
+        listar();
+    }
+
+    function mostrarLoading(){ loading.classList.remove("d-none"); }
+    function esconderLoading(){ loading.classList.add("d-none"); }
+
+    function paginaAnterior(){ if(pagina>0){ pagina--; listar(); } }
+    function proximaPagina(){ if(pagina+1<totalPaginas){ pagina++; listar(); } }
+</script>
+
+</body>
+</html>

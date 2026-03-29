@@ -16,6 +16,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByLogin(String login);
 
+    User findByLogin(String login);
+
     @Query("SELECT u FROM User u WHERE u.ativo = true AND LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<User> searchByName(@Param("name") String name, Pageable pageable);
 

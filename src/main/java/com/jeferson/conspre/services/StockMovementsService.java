@@ -32,19 +32,18 @@ public class StockMovementsService {
     private MaterialRepository materialRepository;
 
     @Transactional(readOnly = true)
-    public Page<StockMovementResponseDTO> findAll(String materialName, Instant moment, Pageable pageable) {
-        Page<StockMovement> page = repository.search(materialName, moment, pageable);
-
-        return page.map((x -> new StockMovementResponseDTO(x)));
+    public Page<StockMovementResponseDTO> findAllRequests(Pageable pageable) {
+        Page<StockMovement> page = repository.findAllRequests(pageable);
+        return page.map(StockMovementResponseDTO::new);
     }
 
     @Transactional(readOnly = true)
     public StockMovementResponseDTO findById(Long id) {
-        StockMovement entity = repository.findById(id).orElseThrow(()
-                -> new ResourceNotFoundException("Movimentação com id: " + id + " não encontrada."));
-
+        StockMovement entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Movimentação com id: " + id + " não encontrada."));
         return new StockMovementResponseDTO(entity);
     }
+
 
     @Transactional
     public StockMovement createMovement(

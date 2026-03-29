@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-
 
 @RestController
 @RequestMapping("/stock-movements")
@@ -22,28 +20,21 @@ public class StockMovementResource {
     @Autowired
     private StockMovementsService service;
 
-    @GetMapping
-    public ResponseEntity<Page<StockMovementResponseDTO>> findAllPage(
-            @RequestParam(required = false) String materialName,
-            @RequestParam(required = false) Instant moment,
-            Pageable pageable
-            ) {
-
-        Page<StockMovementResponseDTO> result = service.findAll(materialName, moment, pageable);
-
+    @GetMapping("/requests")
+    public ResponseEntity<Page<StockMovementResponseDTO>> findAllRequests(Pageable pageable) {
+        Page<StockMovementResponseDTO> result = service.findAllRequests(pageable);
         return ResponseEntity.ok(result);
-
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StockMovementResponseDTO> findById(@PathVariable Long id){
+    public ResponseEntity<StockMovementResponseDTO> findById(@PathVariable Long id) {
         StockMovementResponseDTO dto = service.findById(id);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/input")
     public ResponseEntity<StockMovementResponseDTO> createInput(
-           @Valid @RequestBody StockMovementInputDTO dto){
+            @Valid @RequestBody StockMovementInputDTO dto) {
 
         StockMovementResponseDTO result = service.createInputMovement(dto);
 

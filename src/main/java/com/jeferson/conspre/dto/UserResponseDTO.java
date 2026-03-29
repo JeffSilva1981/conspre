@@ -2,31 +2,26 @@ package com.jeferson.conspre.dto;
 
 import com.jeferson.conspre.entity.User;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class UserResponseDTO {
 
     private Long id;
-    private String name;
-    private String login;
-    private boolean ativo;
-    private Set<RoleResponseDTO> roles;
+    private String username; // login do usuário
+    private String role;     // perfil do usuário
 
     public UserResponseDTO() {
     }
 
     public UserResponseDTO(User entity) {
         this.id = entity.getId();
-        this.name = entity.getName();
-        this.login = entity.getLogin();
-        this.ativo = entity.isAtivo();
-        this.roles = entity.getRoles()
-                .stream()
-                .map(RoleResponseDTO::new)
-                .collect(Collectors.toSet());
+        this.username = entity.getLogin();
+        // Pega a primeira role do usuário (se tiver mais de uma)
+        this.role = entity.getRoles().stream()
+                .map(r -> r.getAuthority()) // seu Role implementa GrantedAuthority
+                .findFirst()
+                .orElse("USER"); // caso o usuário não tenha role, valor padrão
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -35,31 +30,19 @@ public class UserResponseDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getLogin() {
-        return login;
+    public String getRole() {
+        return role;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public Set<RoleResponseDTO> getRoles() {
-        return roles;
+    public void setRole(String role) {
+        this.role = role;
     }
 }

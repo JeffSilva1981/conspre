@@ -7,6 +7,7 @@ import com.jeferson.conspre.dto.UserResponseDTO;
 import com.jeferson.conspre.entity.Role;
 import com.jeferson.conspre.entity.User;
 import com.jeferson.conspre.projections.UserDetailsProjection;
+import com.jeferson.conspre.repositories.RoleRepository;
 import com.jeferson.conspre.repositories.UserRepository;
 import com.jeferson.conspre.services.exceptions.DatabaseException;
 import com.jeferson.conspre.services.exceptions.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -31,19 +33,23 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         List<UserDetailsProjection> result = repository.searchUserAndRolesByLogin(username);
 
-        if (result.size() == 0){
+        if (result.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
 
         User user = new User();
         user.setLogin(username);
         user.setPassword(result.get(0).getPassword());
-        for (UserDetailsProjection projection : result){
+        user.setAtivo(true);
+        for (UserDetailsProjection projection : result) {
             user.addRole(new Role(projection.getRoleId(), projection.getAuthority()));
         }
 
@@ -54,7 +60,7 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public Page<UserResponseDTO> findAll(String name, Pageable pageable) {
 
-        if (name == null){
+        if (name == null) {
             name = "";
         }
 
@@ -66,7 +72,7 @@ public class UserService implements UserDetailsService {
     public UserResponseDTO findById(Long id) {
 
         User user = repository.findById(id).orElseThrow(
-                ()-> new ResourceNotFoundException("Usuário com id: " + id + " não encontrado"));
+                () -> new ResourceNotFoundException("Usuário com id: " + id + " não encontrado"));
 
         return new UserResponseDTO(user);
     }
@@ -74,14 +80,23 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserResponseDTO insert(CreateUserDTO dto) {
 
-        if (repository.existsByLogin(dto.getLogin())){
+        if (repository.existsByLogin(dto.getLogin())) {
             throw new DatabaseException
                     ("Já existe um usuário com este login " + dto.getLogin() + " cadastrado");
         }
 
+
         User entity = new User();
-        copyDtoToEntity(entity, dto);
+
+        // dados básicos
+        entity.setName(dto.getName());
+        entity.setLogin(dto.getLogin());
+        entity.setPassword(passwordEncoder.encode(dto.getPassword()));
         entity.setAtivo(true);
+
+        // roles
+        adicionarRoles(entity, dto.getRole());
+
         entity = repository.save(entity);
         return new UserResponseDTO(entity);
     }
@@ -89,25 +104,34 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserResponseDTO update(Long id, UpdateUserDTO dto) {
 
-        User entity = repository.findById(id).orElseThrow
-                (()-> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
+        User entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         if (!entity.getLogin().equals(dto.getLogin())
                 && repository.existsByLogin(dto.getLogin())) {
-            throw new DatabaseException("Já existe um usuário com este login " + dto.getLogin());
+            throw new DatabaseException("Login já existe: " + dto.getLogin());
         }
 
-        copyUpdateDtoToEntity(entity, dto);
-        entity = repository.save(entity);
-        return new UserResponseDTO(entity);
+        // dados básicos
+        entity.setName(dto.getName());
+        entity.setLogin(dto.getLogin());
 
+
+        // roles
+        entity.getRoles().clear();
+        adicionarRoles(entity, dto.getRole());
+
+        entity = repository.save(entity);
+
+        return new UserResponseDTO(entity);
     }
+
 
     @Transactional
     public void changePassword(Long id, ChangePasswordDTO dto) {
 
         User entity = repository.findById(id).orElseThrow
-                (()-> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
+                (() -> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
 
         // Verifica senha atual
         if (!passwordEncoder.matches(dto.getCurrentPassword(), entity.getPassword())) {
@@ -128,22 +152,28 @@ public class UserService implements UserDetailsService {
     public void delete(Long id) {
 
         User entity = repository.findById(id).orElseThrow
-                (()-> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
+                (() -> new ResourceNotFoundException("Usuário com id " + id + " não encontrado"));
 
         entity.setAtivo(false);
 
         repository.save(entity);
     }
 
-    private void copyUpdateDtoToEntity
-            (User entity, UpdateUserDTO dto) {
-        entity.setName(dto.getName());
-        entity.setLogin(dto.getLogin());
-    }
+    private void adicionarRoles(User entity, Set<String> rolesDTO) {
 
-    private void copyDtoToEntity(User entity, CreateUserDTO dto) {
-        entity.setName(dto.getName());
-        entity.setLogin(dto.getLogin());
-        entity.setPassword(passwordEncoder.encode(dto.getPassword()));
+        if (rolesDTO == null || rolesDTO.isEmpty()) {
+            throw new DatabaseException("Usuário deve ter pelo menos uma role");
+        }
+
+        for (String roleName : rolesDTO) {
+
+            Role role = roleRepository.findByAuthority(roleName);
+
+            if (role == null) {
+                throw new DatabaseException("Role não encontrada: " + roleName);
+            }
+
+            entity.addRole(role);
+        }
     }
 }

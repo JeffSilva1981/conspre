@@ -21,6 +21,7 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public Page<EmployeeMinDTO> findAll(String name, Pageable pageable) {
+        String filtro = (name == null) ? "" : name;
         return repository.search(name, pageable);
     }
 

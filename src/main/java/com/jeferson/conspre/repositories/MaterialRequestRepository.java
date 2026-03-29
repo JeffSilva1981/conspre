@@ -15,6 +15,7 @@ public interface MaterialRequestRepository extends JpaRepository<MaterialRequest
 
     @Query("""
                 SELECT m FROM MaterialRequest m
+                LEFT JOIN FETCH m.requestMaterialItems
                 WHERE
                     (:employeeId IS NULL OR m.employee.id = :employeeId)
                 AND (:ativo IS NULL OR m.ativo = :ativo)

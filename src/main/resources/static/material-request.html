@@ -29,18 +29,24 @@
 
     <h3 class="mb-3">Nova Requisição</h3>
 
-    <!-- FORM -->
+    <div id="alerta" class="alert d-none"></div>
+
     <div class="box">
 
+        <!-- FUNCIONÁRIO -->
         <div class="mb-3">
             <label>Funcionário</label>
-            <select id="employee" class="form-control"></select>
+            <input list="funcionarios" id="employeeInput" class="form-control"
+                   placeholder="Digite para buscar funcionário">
+            <datalist id="funcionarios"></datalist>
         </div>
 
         <div class="row g-2">
             <div class="col-md-5">
                 <label>Material</label>
-                <select id="material" class="form-control"></select>
+                <input list="materiais" id="materialInput" class="form-control"
+                       placeholder="Digite para buscar material">
+                <datalist id="materiais"></datalist>
             </div>
 
             <div class="col-md-3">
@@ -79,12 +85,19 @@
     const token = localStorage.getItem("token");
 
     let itens = [];
+    let listaMateriais = [];
+    let listaFuncionarios = [];
 
-    const materialSelect = document.getElementById("material");
-    const employeeSelect = document.getElementById("employee");
+    const materialInput = document.getElementById("materialInput");
+    const employeeInput = document.getElementById("employeeInput");
+
+    const datalistMateriais = document.getElementById("materiais");
+    const datalistFuncionarios = document.getElementById("funcionarios");
+
     const quantityInput = document.getElementById("quantity");
     const observationInput = document.getElementById("observation");
     const itensTabela = document.getElementById("itensTabela");
+    const alerta = document.getElementById("alerta");
 
     if (!token){
         window.location.href = "login.html";
@@ -93,16 +106,26 @@
     carregarMateriais();
     carregarFuncionarios();
 
+    function mostrarMensagem(msg, tipo){
+        alerta.className = `alert alert-${tipo}`;
+        alerta.innerText = msg;
+        alerta.classList.remove("d-none");
+
+        setTimeout(() => {
+            alerta.classList.add("d-none");
+        }, 3000);
+    }
+
     async function carregarMateriais(){
         const res = await fetch(API + "/materials", {
             headers: { "Authorization": "Bearer " + token }
         });
 
         const data = await res.json();
-        const lista = data.content || data;
+        listaMateriais = data.content || data;
 
-        materialSelect.innerHTML = lista.map(m =>
-            `<option value="${m.id}">${m.name}</option>`
+        datalistMateriais.innerHTML = listaMateriais.map(m =>
+            `<option value="${m.name}">`
         ).join("");
     }
 
@@ -112,30 +135,42 @@
         });
 
         const data = await res.json();
-        const lista = data.content || data;
+        listaFuncionarios = data.content || data;
 
-        employeeSelect.innerHTML = lista.map(e =>
-            `<option value="${e.id}">${e.name}</option>`
+        datalistFuncionarios.innerHTML = listaFuncionarios.map(e =>
+            `<option value="${e.name}">`
         ).join("");
     }
 
     function adicionarItem(){
 
-        const materialId = materialSelect.value;
-        const materialNome = materialSelect.options[materialSelect.selectedIndex]?.text;
+        const nomeDigitado = materialInput.value.trim();
+        const material = listaMateriais.find(m => m.name === nomeDigitado);
         const qtd = quantityInput.value;
 
-        if (!materialId || !qtd){
-            alert("Preencha material e quantidade");
+        if (!material){
+            mostrarMensagem("Selecione um material válido", "danger");
+            return;
+        }
+
+        if (!qtd || qtd <= 0){
+            mostrarMensagem("Informe uma quantidade válida", "danger");
+            return;
+        }
+
+        // 🔥 EVITA DUPLICADO
+        if (itens.some(i => i.materialId === material.id)){
+            mostrarMensagem("Material já adicionado", "warning");
             return;
         }
 
         itens.push({
-            materialId: materialId,
-            nome: materialNome,
+            materialId: material.id,
+            nome: material.name,
             quantity: qtd
         });
 
+        materialInput.value = "";
         quantityInput.value = "";
 
         renderizarItens();
@@ -151,7 +186,7 @@
                     <td>${item.nome}</td>
                     <td>${item.quantity}</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" onclick="removerItem(${i})">X</button>
+                        <button class="btn btn-danger btn-sm" onclick="removerItem(${i})">Remover</button>
                     </td>
                 </tr>
             `;
@@ -165,13 +200,21 @@
 
     async function finalizar(){
 
+        const nomeFuncionario = employeeInput.value.trim();
+        const funcionario = listaFuncionarios.find(e => e.name === nomeFuncionario);
+
+        if (!funcionario){
+            mostrarMensagem("Selecione um funcionário válido", "danger");
+            return;
+        }
+
         if (itens.length === 0){
-            alert("Adicione pelo menos um item");
+            mostrarMensagem("Adicione pelo menos um item", "danger");
             return;
         }
 
         const body = {
-            employeeId: parseInt(employeeSelect.value),
+            employeeId: funcionario.id,
             userId: 1,
             observation: observationInput.value,
             items: itens.map(i => ({
@@ -190,13 +233,15 @@
         });
 
         if (res.ok){
-            alert("Requisição criada!");
+            mostrarMensagem("Requisição criada com sucesso!", "success");
+
             itens = [];
             renderizarItens();
+
+            employeeInput.value = "";
+            observationInput.value = "";
         } else {
-            const erro = await res.text();
-            console.error(erro);
-            alert("Erro ao criar requisição");
+            mostrarMensagem("Erro ao criar requisição", "danger");
         }
     }
 

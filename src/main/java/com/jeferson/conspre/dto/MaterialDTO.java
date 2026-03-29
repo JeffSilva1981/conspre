@@ -58,7 +58,8 @@ public class MaterialDTO {
         unitOfMeasure = entity.getUnitOfMeasure();
         currentStock = entity.getCurrentStock();
         minimumStock = entity.getMinimumStock();
-        ativo = entity.isAtivo();
+        ativo = entity.getAtivo();
+
     }
 
     public MaterialDTO(Material entity, Set<Category> categories) {

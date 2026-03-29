@@ -21,21 +21,26 @@ public class Material {
 
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
+    @Column(nullable = false, length = 100)
     private String name;
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private TypeUnit unitOfMeasure;
 
     @NotNull
     @PositiveOrZero
+    @Column(nullable = false)
     private BigDecimal currentStock;
 
     @NotNull
     @PositiveOrZero
+    @Column(nullable = false)
     private BigDecimal minimumStock;
 
-
+    @NotNull
+    @Column(nullable = false)
     private Boolean ativo;
 
     @ManyToMany
@@ -50,11 +55,10 @@ public class Material {
     private Set<StockMovement> stockMovements = new HashSet<>();
 
     public Material() {
-
     }
 
-    public Material(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock, BigDecimal minimumStock, Boolean ativo,
-                    Set<Category> categories) {
+    public Material(Long id, String name, TypeUnit unitOfMeasure, BigDecimal currentStock, BigDecimal minimumStock,
+                    Boolean ativo, Set<Category> categories) {
         this.id = id;
         this.name = name;
         this.unitOfMeasure = unitOfMeasure;
@@ -64,6 +68,7 @@ public class Material {
         this.categories = categories;
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -104,16 +109,12 @@ public class Material {
         this.minimumStock = minimumStock;
     }
 
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
-
     public Boolean getAtivo() {
         return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
     }
 
     public Set<Category> getCategories() {
