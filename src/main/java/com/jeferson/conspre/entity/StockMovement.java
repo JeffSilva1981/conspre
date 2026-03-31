@@ -25,7 +25,7 @@ public class StockMovement {
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal quantity;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String observation;
 
     @ManyToOne
@@ -49,7 +49,7 @@ public class StockMovement {
         this.moment = Instant.now();
     }
 
-    public StockMovement(){
+    public StockMovement() {
 
     }
 

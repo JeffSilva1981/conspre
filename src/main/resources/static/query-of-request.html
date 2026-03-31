@@ -35,42 +35,13 @@
 
     <h3 class="mb-3">Requisições</h3>
 
-    <!-- FILTROS -->
-    <div class="box mb-3">
-        <div class="row g-2">
-
-            <div class="col-md-4">
-                <label>Funcionário</label>
-                <input list="funcionarios" id="filtroEmployee" class="form-control" placeholder="Digite para buscar">
-                <datalist id="funcionarios"></datalist>
-            </div>
-
-            <div class="col-md-3">
-                <label>Data Inicial</label>
-                <input id="dataInicio" type="date" class="form-control">
-            </div>
-
-            <div class="col-md-3">
-                <label>Data Final</label>
-                <input id="dataFim" type="date" class="form-control">
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-                <button class="btn btn-primary w-100" onclick="buscar()">Buscar</button>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- TABELA -->
     <div class="box">
-
         <div id="loading" class="loading d-none">Carregando...</div>
 
         <table class="table table-hover">
             <thead>
             <tr>
-                <th>ID</th>
+                <th>ID Requisição</th>
                 <th>Funcionário</th>
                 <th>Data</th>
                 <th>Ações</th>
@@ -78,18 +49,10 @@
             </thead>
             <tbody id="tabela"></tbody>
         </table>
-
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary" onclick="paginaAnterior()">⬅</button>
-            <span id="paginaInfo"></span>
-            <button class="btn btn-secondary" onclick="proximaPagina()">➡</button>
-        </div>
-
     </div>
-
 </div>
 
-<!-- MODAL ITENS -->
+<!-- MODAL -->
 <div class="modal fade" id="modalItens">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -108,122 +71,82 @@
     const API = "http://localhost:8080";
     const token = localStorage.getItem("token");
 
-    let listaFuncionarios = [];
-    let pagina = 0;
-    let totalPaginas = 0;
+    let dadosAgrupados = {};
 
     const tabela = document.getElementById("tabela");
-    const paginaInfo = document.getElementById("paginaInfo");
     const loading = document.getElementById("loading");
-
-    const filtroEmployee = document.getElementById("filtroEmployee");
-    const dataInicio = document.getElementById("dataInicio");
-    const dataFim = document.getElementById("dataFim");
-
-    const datalistFuncionarios = document.getElementById("funcionarios");
 
     let modalItens = new bootstrap.Modal(document.getElementById("modalItens"));
 
-    if (!token){
-        window.location.href = "login.html";
-    }
+    if (!token) window.location.href = "login.html";
 
-    carregarFuncionarios();
     listar();
 
     function mostrarLoading(){ loading.classList.remove("d-none"); }
     function esconderLoading(){ loading.classList.add("d-none"); }
 
-    async function carregarFuncionarios(){
-        const res = await fetch(API + "/employees", {
-            headers: { Authorization: "Bearer " + token }
-        });
-
-        const data = await res.json();
-        listaFuncionarios = data.content || data;
-
-        datalistFuncionarios.innerHTML = listaFuncionarios.map(e =>
-            `<option value="${e.name}">`
-        ).join("");
-    }
-
-    function montarUrl(){
-        let url = API + `/stock-movements/requests?page=${pagina}&size=10`;
-        const params = [];
-
-        const funcionario = listaFuncionarios.find(e => e.name === filtroEmployee.value);
-
-        if (funcionario) params.push("userId=" + funcionario.id); // backend usa userId
-        if (dataInicio.value) params.push("dateMin=" + dataInicio.value);
-        if (dataFim.value) params.push("dateMax=" + dataFim.value);
-
-        if (params.length > 0){
-            url += "&" + params.join("&");
-        }
-
-        return url;
-    }
-
     async function listar(){
         mostrarLoading();
 
         try {
-            const res = await fetch(montarUrl(), {
+            const res = await fetch(API + "/stock-movements/requests", {
                 headers: { Authorization: "Bearer " + token }
             });
 
             const data = await res.json();
 
-            totalPaginas = data.totalPages || 1;
-            renderizar(data.content || data);
-            paginaInfo.innerText = `Página ${pagina+1} de ${totalPaginas}`;
+            agrupar(data.content);
+            renderizar();
+
         } catch (err){
             console.error(err);
-            tabela.innerHTML = `<tr><td colspan="4" class="text-center">Erro ao carregar requisições</td></tr>`;
         } finally {
             esconderLoading();
         }
     }
 
-    function buscar(){
-        pagina = 0;
-        listar();
+    // 🔥 AGRUPAMENTO CORRETO
+    function agrupar(lista){
+        dadosAgrupados = {};
+
+        lista.forEach(item => {
+
+            const reqId = item.materialRequestId;
+
+            if (!dadosAgrupados[reqId]) {
+                dadosAgrupados[reqId] = {
+                    id: reqId,
+                    employeeName: item.employeeName,
+                    moment: item.moment,
+                    itens: []
+                };
+            }
+
+            dadosAgrupados[reqId].itens.push(item);
+        });
     }
 
-    function paginaAnterior(){
-        if (pagina > 0){
-            pagina--;
-            listar();
-        }
-    }
-
-    function proximaPagina(){
-        if (pagina < totalPaginas - 1){
-            pagina++;
-            listar();
-        }
-    }
-
-    function renderizar(lista){
+    function renderizar(){
         tabela.innerHTML = "";
 
-        if (!lista || lista.length === 0){
-            tabela.innerHTML = `<tr><td colspan="4" class="text-center">Nenhuma requisição</td></tr>`;
+        const lista = Object.values(dadosAgrupados);
+
+        if (lista.length === 0){
+            tabela.innerHTML = `<tr><td colspan="4">Nenhum dado</td></tr>`;
             return;
         }
 
         lista.forEach(r => {
-            const funcionario = r.userName || "-";
-            const dataFormatada = r.moment ? new Date(r.moment).toLocaleString("pt-BR") : "-";
-            const itens = r.items || [];
+
+            const dataFormatada = new Date(r.moment).toLocaleString("pt-BR");
 
             tabela.innerHTML += `
                 <tr>
                     <td>${r.id}</td>
-                    <td>${funcionario}</td>
+                    <td>${r.employeeName}</td>
                     <td>${dataFormatada}</td>
                     <td>
-                        <button class="btn btn-info btn-sm" onclick='verItens(${JSON.stringify(itens)})'>
+                        <button class="btn btn-info btn-sm" onclick="verItens(${r.id})">
                             Ver Itens
                         </button>
                     </td>
@@ -232,25 +155,30 @@
         });
     }
 
-    function verItens(itens){
-        const div = document.getElementById("itensModal");
+    function verItens(id){
 
-        if (!itens || itens.length === 0){
+        const div = document.getElementById("itensModal");
+        const req = dadosAgrupados[id];
+
+        if (!req || req.itens.length === 0){
             div.innerHTML = "Sem itens";
         } else {
+
             div.innerHTML = `
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Material</th>
                             <th>Quantidade</th>
+                            <th>Tipo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${itens.map(i => `
+                        ${req.itens.map(i => `
                             <tr>
                                 <td>${i.materialName}</td>
                                 <td>${i.quantity}</td>
+                                <td>${i.type}</td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -260,7 +188,6 @@
 
         modalItens.show();
     }
-
 </script>
 
 </body>

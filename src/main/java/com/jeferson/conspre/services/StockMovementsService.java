@@ -33,8 +33,8 @@ public class StockMovementsService {
 
     @Transactional(readOnly = true)
     public Page<StockMovementResponseDTO> findAllRequests(Pageable pageable) {
-        Page<StockMovement> page = repository.findAllRequests(pageable);
-        return page.map(StockMovementResponseDTO::new);
+        Page<StockMovement> page = repository.findAll(pageable);
+        return page.map(x -> new StockMovementResponseDTO(x));
     }
 
     @Transactional(readOnly = true)

@@ -12,6 +12,7 @@ public class MaterialRequestResponseDTO {
     private String employeeName;
     private Long userId;
     private String observation;
+    private String userName;
 
     private List<RequestMaterialItemResponseDTO> items;
 
@@ -33,12 +34,12 @@ public class MaterialRequestResponseDTO {
         this.date = entity.getMoment();
 
         if (entity.getEmployee() != null) {
-            this.observation = entity.getEmployee().getName();
-            this.employeeName = entity.getEmployee().getName(); // 🔥 AQUI
+            this.employeeName = entity.getEmployee().getName();
         }
 
         if (entity.getUser() != null) {
             this.userId = entity.getUser().getId();
+            this.userName = entity.getUser().getName();
         }
 
         this.observation = entity.getObservation();
@@ -98,5 +99,13 @@ public class MaterialRequestResponseDTO {
 
     public void setObservation(String observation) {
         this.observation = observation;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

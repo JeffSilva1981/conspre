@@ -1,6 +1,5 @@
 package com.jeferson.conspre.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -21,7 +20,6 @@ public class RequestMaterialItem {
 
     @ManyToOne()
     @JoinColumn(name = "material_id")
-    @JsonIgnore
     private Material material;
 
     public RequestMaterialItem() {

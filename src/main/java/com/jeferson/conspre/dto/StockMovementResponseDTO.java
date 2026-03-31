@@ -21,11 +21,14 @@ public class StockMovementResponseDTO {
     private Long materialId;
     private String materialName;
     private Long materialRequestId;
+
     private Long userId;
     private String userName;
 
-    public StockMovementResponseDTO() {
+    private Long employeeId;
+    private String employeeName;
 
+    public StockMovementResponseDTO() {
     }
 
     public StockMovementResponseDTO(StockMovement entity) {
@@ -33,8 +36,11 @@ public class StockMovementResponseDTO {
         this.type = entity.getType();
         this.moment = entity.getMoment();
         this.quantity = entity.getQuantity();
-        this.materialId = entity.getMaterial().getId();
-        this.materialName = entity.getMaterial().getName();
+
+        if (entity.getMaterial() != null) {
+            this.materialId = entity.getMaterial().getId();
+            this.materialName = entity.getMaterial().getName();
+        }
 
         if (entity.getMaterialRequest() != null) {
             this.materialRequestId = entity.getMaterialRequest().getId();
@@ -44,8 +50,14 @@ public class StockMovementResponseDTO {
             this.userId = entity.getUser().getId();
             this.userName = entity.getUser().getName();
         }
+
+        if (entity.getEmployee() != null) {
+            this.employeeId = entity.getEmployee().getId();
+            this.employeeName = entity.getEmployee().getName();
+        }
     }
 
+    // getters e setters
     public Long getId() {
         return id;
     }
@@ -116,5 +128,21 @@ public class StockMovementResponseDTO {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
+    }
+
+    public void setEmployeeName(String employeeName) {
+        this.employeeName = employeeName;
     }
 }

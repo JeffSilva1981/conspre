@@ -38,10 +38,9 @@ public class MaterialRequestService {
     private UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public Page<MaterialRequestResponseDTO> findAll(Long employeeId, Boolean ativo, Instant dateMin, Instant dateMax, String observation, Pageable pageable) {
+    public Page<MaterialRequestResponseDTO> findAll(Pageable pageable) {
 
-        Page<MaterialRequest> result = materialRequestRepository.search(
-                employeeId, ativo, dateMin, dateMax, observation, pageable);
+        Page<MaterialRequest> result = materialRequestRepository.findAll(pageable);
 
         return result.map(x -> new MaterialRequestResponseDTO(x));
     }

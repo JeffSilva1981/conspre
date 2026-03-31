@@ -16,6 +16,7 @@ public class MaterialRequest {
     private Long id;
     private Instant moment;
 
+    @Column(name = "observation", columnDefinition = "TEXT")
     private String observation;
 
     @ManyToOne()
