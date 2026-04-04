@@ -63,7 +63,7 @@ To run this project, make sure you have the following installed:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/your-repository.git
+git clone https://github.com/JeffSilva1981/conspre.git
 ```
 
 ### 2. Navigate to the project directory
@@ -134,37 +134,57 @@ http://localhost:8080/swagger-ui.html
 
 #### Home
 
-![home](docs/api/screens/home.png)
+<p align="center">
+  <img src="docs/api/screens/home.png" width="500"/>
+</p>
 
 #### Users
 
-![User](docs/api/screens/createdUser.png)
+<p align="center">
+  <img src="docs/api/screens/createdUser.png" width="500"/>
+</p>
 
 #### Categories
 
-![categories](docs/api/screens/categories.png)
+<p align="center">
+  <img src="docs/api/screens/categories.png" width="500"/>
+</p>
 
 #### Employees
 
-![employees](docs/api/screens/employees.png)
+<p align="center">
+  <img src="docs/api/screens/employees.png" width="500"/>
+</p>
 
-![employees](docs/api/screens/createdEmployees.png)
+<p align="center">
+  <img src="docs/api/screens/createdEmployees.png" width="500"/>
+</p>
 
 #### Materials
 
-![materials](docs/api/screens/createdMaterials.png)
+<p align="center">
+  <img src="docs/api/screens/materials.png" width="500"/>
+</p>
 
-![materials](docs/api/screens/materials.png)
+<p align="center">
+  <img src="docs/api/screens/createdMaterials.png" width="500"/>
+</p>
 
 #### Material Requests
 
-![materialsRequest](docs/api/screens/createdRequest.png)
-
-![materialsRequest](docs/api/screens/request.png)
+<p align="center">
+  <img src="docs/api/screens/createdRequest.png" width="500"/>
+</p>
 
 #### Stock Movements
 
-![requestDetails](docs/api/screens/requestDetails.png)
+<p align="center">
+  <img src="docs/api/screens/request.png" width="500"/>
+</p>
+
+<p align="center">
+  <img src="docs/api/screens/requestDetails.png" width="500"/>
+</p>
 
 ### 🧪 Testing the API
 
